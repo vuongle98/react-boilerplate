@@ -1,0 +1,16 @@
+import { QueryClient } from "@tanstack/react-query";
+
+/**
+ * Query client configuration for React Query
+ * Centralizes all query settings and defaults
+ */
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
+
