@@ -41,7 +41,7 @@ export const ActionButtons = ({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="ml-auto">
+          <Button variant="secondary" size="sm" className="ml-auto">
             Actions <MoreVertical className="ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>

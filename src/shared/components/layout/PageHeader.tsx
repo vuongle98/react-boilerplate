@@ -1,7 +1,8 @@
 import { Button } from "@/shared/ui/button";
+import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import { PlusCircle, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
-import { ReactNode, Children, cloneElement, isValidElement } from "react";
+import { ReactNode, ReactElement, Children, cloneElement, isValidElement } from "react";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import {
   DropdownMenu,
@@ -54,10 +55,11 @@ export function PageHeader({
       {children}
       {button}
       {actions}
+      <ThemeToggle />
       {showAddButton && (
-        <Button onClick={handleAdd}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {addButtonLabel || addButtonText}
+        <Button onClick={handleAdd} size="sm" className="gap-1.5 sm:gap-2 min-w-0 sm:min-w-fit"
+        iconLeft={<PlusCircle className="h-3.5 w-3.5" />} title={addButtonLabel || addButtonText}>
+          <span className="sr-only sm:not-sr-only sm:text-sm">{addButtonLabel || addButtonText}</span>
         </Button>
       )}
     </div>
@@ -133,7 +135,7 @@ export function PageHeader({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" title="More actions">
+          <Button variant="secondary" size="sm" title="More actions">
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -145,6 +147,11 @@ export function PageHeader({
           {button && renderNodeAsDropdownItem(button, -1)}
           {((children || button) && actions) && <DropdownMenuSeparator />}
           {actions && renderNodeAsDropdownItem(actions, -2)}
+          {((children || button || actions) && showAddButton) && <DropdownMenuSeparator />}
+          <DropdownMenuSeparator />
+          <div className="px-1 py-1">
+            <ThemeToggle variant="ghost" size="sm" showLabel />
+          </div>
           {((children || button || actions) && showAddButton) && <DropdownMenuSeparator />}
           {showAddButton && (
             <DropdownMenuItem onClick={handleAdd}>

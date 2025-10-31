@@ -9,7 +9,7 @@ interface FilterBadgeProps {
 
 export const FilterBadge = ({ label, onRemove }: FilterBadgeProps) => {
   return (
-    <Badge variant="outline" className="flex items-center gap-1">
+    <Badge variant="secondary" className="flex items-center gap-1">
       {label}
       <Button
         variant="ghost"

@@ -18,16 +18,16 @@ export const MobileFilters = ({
   children,
 }: MobileFiltersProps) => (
   <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-    <div className="p-4 flex items-center justify-between">
+    <div className="flex items-center justify-between">
       <h3 className="text-sm font-medium">Filters</h3>
       <CollapsibleTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center">
-          <FilterIcon className="h-3.5 w-3.5 mr-1.5" />
-          {isOpen ? "Hide Filters" : "Show Filters"}
+        <Button variant="secondary" size="sm" className="flex items-center" title={isOpen ? "Hide Filters" : "Show Filters"}>
+          <FilterIcon className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:text-sm">{isOpen ? "Hide Filters" : "Show Filters"}</span>
         </Button>
       </CollapsibleTrigger>
     </div>
-    <CollapsibleContent className="px-4 pb-4">
+    <CollapsibleContent className="pb-4">
       {children}
     </CollapsibleContent>
   </Collapsible>

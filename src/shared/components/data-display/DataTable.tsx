@@ -30,6 +30,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { LoadingSpinner } from "@/shared/components/loading";
 import { MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
@@ -56,12 +58,14 @@ export interface DataTableProps<T> {
   columns: Column<T>[];
   actions?: Action<T>[];
   isLoading?: boolean;
+  loadingMode?: "skeleton" | "overlay" | "spinner";
   emptyState?: {
     title: string;
     description: string;
     icon?: React.ReactNode;
   };
   loadingRows?: number;
+  loadingText?: string;
   onRowClick?: (item: T) => void;
   className?: string;
 
@@ -81,11 +85,13 @@ export function DataTable<T extends { id: string | number }>({
   columns,
   actions = [],
   isLoading = false,
+  loadingMode = "skeleton",
   emptyState = {
     title: "No data found",
     description: "There are no items to display at the moment.",
   },
   loadingRows = 5,
+  loadingText = "Loading data...",
   onRowClick,
   className = "",
 
@@ -102,6 +108,49 @@ export function DataTable<T extends { id: string | number }>({
   const [deleteItem, setDeleteItem] = useState<T | null>(null);
   const [deleteAction, setDeleteAction] = useState<Action<T> | null>(null);
   const isMobile = useIsMobile();
+
+  // Helper function to render skeleton table rows
+  const renderSkeletonTableRows = () => {
+    return [...Array(loadingRows)].map((_, i) => (
+      <TableRow key={`skeleton-${i}`}>
+        {columns.map((column) => (
+          <TableCell key={String(column.key)}>
+            <Skeleton className="h-4 w-full" />
+          </TableCell>
+        ))}
+        {actions.length > 0 && (
+          <TableCell>
+            <Skeleton className="h-8 w-8" />
+          </TableCell>
+        )}
+      </TableRow>
+    ));
+  };
+
+  // Helper function to render skeleton mobile cards
+  const renderSkeletonMobileCards = () => {
+    return [...Array(loadingRows)].map((_, i) => (
+      <Card key={`skeleton-mobile-${i}`}>
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            {columns.slice(0, 3).map((column) => (
+              <div key={String(column.key)} className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">
+                  {column.label}
+                </div>
+                <Skeleton className="h-4 w-full" />
+              </div>
+            ))}
+            {actions.length > 0 && (
+              <div className="flex justify-end">
+                <Skeleton className="h-8 w-8" />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    ));
+  };
 
   const handleActionClick = (action: Action<T>, item: T) => {
     if (action.variant === "destructive") {
@@ -122,32 +171,8 @@ export function DataTable<T extends { id: string | number }>({
 
   // Render mobile card layout
   const renderMobileCards = () => {
-    if (isLoading) {
-      return (
-        <div className="space-y-4">
-          {[...Array(loadingRows)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {columns.slice(0, 3).map((column) => (
-                    <div key={String(column.key)} className="space-y-1">
-                      <div className="text-sm font-medium text-muted-foreground">
-                        {column.label}
-                      </div>
-                      <div className="h-4 w-full animate-pulse rounded bg-muted" />
-                    </div>
-                  ))}
-                  {actions.length > 0 && (
-                    <div className="flex justify-end">
-                      <div className="h-8 w-8 animate-pulse rounded bg-muted" />
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      );
+    if (isLoading && loadingMode === "skeleton") {
+      return <div className="space-y-4">{renderSkeletonMobileCards()}</div>;
     }
 
     if (data.length === 0) {
@@ -163,14 +188,14 @@ export function DataTable<T extends { id: string | number }>({
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 relative">
         {data.map((item) => (
           <Card
             key={item.id}
             className={onRowClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
             onClick={() => onRowClick?.(item)}
           >
-            <CardContent className="p-4">
+            <CardContent>
               <div className="space-y-3">
                 {columns.map((column) => (
                   <div key={String(column.key)} className="flex justify-between items-start gap-4">
@@ -267,47 +292,30 @@ export function DataTable<T extends { id: string | number }>({
             />
           </div>
         )}
+
+        {/* Loading overlay for overlay mode */}
+        {shouldShowOverlay && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10">
+            <LoadingSpinner size="lg" text={loadingText} />
+          </div>
+        )}
       </div>
     );
   };
 
-  // Loading state
-  if (isLoading) {
+  // Loading state - different modes
+  if (isLoading && loadingMode === "spinner") {
     return (
       <div className={`rounded-md border ${className}`}>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map((column) => (
-                <TableHead key={String(column.key)} className={column.className}>
-                  {column.label}
-                </TableHead>
-              ))}
-              {actions.length > 0 && (
-                <TableHead className="w-[70px]"></TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {[...Array(loadingRows)].map((_, i) => (
-              <TableRow key={i}>
-                {columns.map((column) => (
-                  <TableCell key={String(column.key)}>
-                    <div className="h-4 w-full animate-pulse rounded bg-muted" />
-                  </TableCell>
-                ))}
-                {actions.length > 0 && (
-                  <TableCell>
-                    <div className="h-8 w-8 animate-pulse rounded bg-muted" />
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+          <LoadingSpinner size="lg" text={loadingText} />
+        </div>
       </div>
     );
   }
+
+  // For overlay mode, we'll render the normal content but with an overlay
+  const shouldShowOverlay = isLoading && loadingMode === "overlay";
 
   // Empty state
   if (data.length === 0) {
@@ -359,7 +367,7 @@ export function DataTable<T extends { id: string | number }>({
   // Desktop table layout
   return (
     <>
-      <div className={`rounded-md border ${className}`}>
+      <div className={`rounded-md border relative ${className}`}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -374,64 +382,75 @@ export function DataTable<T extends { id: string | number }>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item) => (
-              <TableRow
-                key={item.id}
-                className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
-                onClick={() => onRowClick?.(item)}
-              >
-                {columns.map((column) => (
-                  <TableCell key={String(column.key)}>
-                    {column.render
-                      ? column.render(item[column.key as keyof T], item)
-                      : String(item[column.key as keyof T] || "")
-                    }
-                  </TableCell>
-                ))}
-                {actions.length > 0 && (
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {actions.map((action, index) => {
-                          const isDisabled =
-                            typeof action.disabled === "function"
-                              ? action.disabled(item)
-                              : action.disabled;
+            {isLoading && loadingMode === "skeleton" ? (
+              renderSkeletonTableRows()
+            ) : (
+              data.map((item) => (
+                <TableRow
+                  key={item.id}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
+                  onClick={() => onRowClick?.(item)}
+                >
+                  {columns.map((column) => (
+                    <TableCell key={String(column.key)}>
+                      {column.render
+                        ? column.render(item[column.key as keyof T], item)
+                        : String(item[column.key as keyof T] || "")
+                      }
+                    </TableCell>
+                  ))}
+                  {actions.length > 0 && (
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {actions.map((action, index) => {
+                            const isDisabled =
+                              typeof action.disabled === "function"
+                                ? action.disabled(item)
+                                : action.disabled;
 
-                          return (
-                            <DropdownMenuItem
-                              key={index}
-                              onClick={() => handleActionClick(action, item)}
-                              disabled={isDisabled}
-                              className={
-                                action.variant === "destructive"
-                                  ? "text-destructive focus:text-destructive"
-                                  : ""
-                              }
-                            >
-                              {action.icon && (
-                                <action.icon className="mr-2 h-4 w-4" />
-                              )}
-                              {action.label}
-                            </DropdownMenuItem>
-                          );
-                        })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
+                            return (
+                              <DropdownMenuItem
+                                key={index}
+                                onClick={() => handleActionClick(action, item)}
+                                disabled={isDisabled}
+                                className={
+                                  action.variant === "destructive"
+                                    ? "text-destructive focus:text-destructive"
+                                    : ""
+                                }
+                              >
+                                {action.icon && (
+                                  <action.icon className="mr-2 h-4 w-4" />
+                                )}
+                                {action.label}
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
+
+        {/* Loading overlay for overlay mode */}
+        {shouldShowOverlay && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-md">
+            <LoadingSpinner size="lg" text={loadingText} />
+          </div>
+        )}
       </div>
 
       {/* Pagination Controls for Desktop */}

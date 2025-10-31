@@ -27,7 +27,7 @@ export const FilterDate = ({ option, value, onChange }: FilterDateProps) => {
       <Popover>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
+            variant="secondary"
             className={cn(
               "w-full justify-start text-left font-normal",
               !dateValue && "text-muted-foreground"

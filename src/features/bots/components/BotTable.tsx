@@ -8,6 +8,8 @@ import { formatDistanceToNow } from "date-fns";
 interface BotTableProps {
   bots: Bot[];
   isLoading?: boolean;
+  loadingMode?: "skeleton" | "overlay" | "spinner";
+  loadingText?: string;
   onEdit: (bot: Bot) => void;
   onDelete: (id: number) => void;
 
@@ -33,6 +35,8 @@ const statusColors: Record<BotStatus, string> = {
 export const BotTable = React.memo(function BotTable({
   bots,
   isLoading,
+  loadingMode = "skeleton",
+  loadingText = "Loading data...",
   onEdit,
   onDelete,
   showPagination = false,
@@ -76,7 +80,7 @@ export const BotTable = React.memo(function BotTable({
       key: "status",
       label: "Status",
       render: (value) => (
-        <Badge variant="outline" className={statusColors[value as BotStatus]}>
+        <Badge variant="secondary" className={statusColors[value as BotStatus]}>
           {value}
         </Badge>
       ),
@@ -122,6 +126,8 @@ export const BotTable = React.memo(function BotTable({
       columns={columns}
       actions={actions}
       isLoading={isLoading}
+      loadingMode={loadingMode}
+      loadingText={loadingText}
       emptyState={{
         title: "No bots found",
         description: "Create your first bot or adjust your filters to see results.",

@@ -5,6 +5,7 @@ import { AuthenticatedLayout } from "@/layouts/AuthenticatedLayout";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Home } from "@/pages/Home";
 import { BotsPage } from "@/pages/BotsPage";
+import { ComponentsDemo } from "@/pages/ComponentsDemo";
 
 /**
  * AppRouter defines all application routes
@@ -36,6 +37,7 @@ export function AppRouter() {
       >
         <Route path="/" element={<Home />} />
         <Route path="/bots" element={<BotsPage />} />
+        <Route path="/components" element={<ComponentsDemo />} />
       </Route>
 
       {/* 404 Not Found */}

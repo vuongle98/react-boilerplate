@@ -2,6 +2,7 @@ import React from "react";
 import { ApiQueryFilters } from "@/shared/hooks/use-api-query";
 import { FilterOption, Option } from "@/shared/types/common";
 import { cn } from "@/shared/lib/utils";
+import { SlideUp } from "@/shared/ui/animate";
 import { FilterBadges } from "./FilterBadges";
 import { FilterControls } from "./FilterControls";
 import { FilterOptions } from "./FilterOptions";
@@ -82,18 +83,20 @@ function FiltersContent({
     </div>
 
     {showFilters && (
-      <div className="grid gap-4 transition-all duration-300 ease-in-out">
-        {options && options.length > 0 ? (
-          <FilterOptions
-            groupedFilters={groupedFilters}
-            filters={filters}
-            handleFilterChange={handleFilterChange}
-            handleSearchableSelectChange={handleSearchableSelectChange}
-          />
-        ) : (
-          children
-        )}
-      </div>
+      <SlideUp delay={100}>
+        <div className="grid gap-4">
+          {options && options.length > 0 ? (
+            <FilterOptions
+              groupedFilters={groupedFilters}
+              filters={filters}
+              handleFilterChange={handleFilterChange}
+              handleSearchableSelectChange={handleSearchableSelectChange}
+            />
+          ) : (
+            children
+          )}
+        </div>
+      </SlideUp>
     )}
   </>
   );

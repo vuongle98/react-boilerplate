@@ -62,6 +62,14 @@ interface ThemeContextType {
   accentConfig: AccentConfig;
   availableAccents: AccentConfig[];
   setAccent: (accent: AccentName) => void;
+  // Compact mode
+  isCompact: boolean;
+  setCompact: (compact: boolean) => void;
+  toggleCompact: () => void;
+  // Glass effect
+  glassEffect: boolean;
+  setGlassEffect: (glass: boolean) => void;
+  toggleGlassEffect: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -108,6 +116,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     return savedAccent || legacyAccent || defaultAccent;
   });
 
+  const [isCompact, setCompactState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const savedCompact = localStorage.getItem("utilz-theme-compact");
+    return savedCompact === "true";
+  });
+
+  const [glassEffect, setGlassEffectState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const savedGlass = localStorage.getItem("utilz-theme-glass");
+    return savedGlass === "true";
+  });
+
   const accentConfig =
     availableAccents.find((a) => a.name === accent) || availableAccents[0];
   const prefersDark =
@@ -116,20 +136,24 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   const isDarkMode = theme === "system" ? prefersDark : theme === "dark";
 
   const applyTheme = useCallback(
-    (newMode: ThemeMode, newAccent: AccentName) => {
+    (newMode: ThemeMode, newAccent: AccentName, newCompact: boolean, newGlassEffect: boolean) => {
       if (typeof document === "undefined") return;
 
       const root = document.documentElement;
 
+      // Get fresh prefersDark value
+      const currentPrefersDark = typeof window !== "undefined" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+
       // Remove previous classes
-      ["light", "dark"].forEach((cls) => root.classList.remove(cls));
+      ["light", "dark", "compact", "normal-mode", "glass-effect"].forEach((cls) => root.classList.remove(cls));
       availableAccents.forEach(
         (a) => a.class && root.classList.remove(a.class)
       );
 
       // Add mode class
       const modeClass =
-        newMode === "system" ? (prefersDark ? "dark" : "light") : newMode;
+        newMode === "system" ? (currentPrefersDark ? "dark" : "light") : newMode;
       root.classList.add(modeClass);
 
       // Add accent class (if any)
@@ -138,28 +162,46 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         root.classList.add(accentConf.class);
       }
 
+      // Add spacing mode class
+      if (newCompact) {
+        root.classList.add("compact");
+      } else {
+        root.classList.add("normal-mode");
+      }
+
+      // Add glass effect class
+      if (newGlassEffect) {
+        root.classList.add("glass-effect");
+      }
+
       root.setAttribute("data-theme", modeClass);
 
-      // Persist
-      localStorage.setItem("utilz-theme-mode", newMode);
-      localStorage.setItem("utilz-theme-accent", newAccent);
+      // Persist to localStorage
+      try {
+        localStorage.setItem("utilz-theme-mode", newMode);
+        localStorage.setItem("utilz-theme-accent", newAccent);
+        localStorage.setItem("utilz-theme-compact", newCompact.toString());
+        localStorage.setItem("utilz-theme-glass", newGlassEffect.toString());
+      } catch (error) {
+        console.warn("Failed to save theme to localStorage:", error);
+      }
     },
-    [prefersDark]
+    []
   );
 
   // Apply theme on mount and when theme changes
   useEffect(() => {
-    applyTheme(theme, accent);
-  }, [theme, accent, applyTheme]);
+    applyTheme(theme, accent, isCompact, glassEffect);
+  }, [theme, accent, isCompact, glassEffect, applyTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
     if (theme !== "system") return;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => applyTheme("system", accent);
+    const handleChange = () => applyTheme("system", accent, isCompact, glassEffect);
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, accent, applyTheme]);
+  }, [theme, accent, isCompact, glassEffect, applyTheme]);
 
   const setTheme = (newTheme: ThemeMode) => {
     setThemeState(newTheme);
@@ -167,6 +209,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   const setAccent = (newAccent: AccentName) => {
     setAccentState(newAccent);
+  };
+
+  const setCompact = (compact: boolean) => {
+    setCompactState(compact);
+  };
+
+  const setGlassEffect = (glass: boolean) => {
+    setGlassEffectState(glass);
+  };
+
+  const toggleCompact = () => {
+    setCompact(!isCompact);
+  };
+
+  const toggleGlassEffect = () => {
+    setGlassEffect(!glassEffect);
   };
 
   const toggleTheme = () => {
@@ -186,6 +244,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     accentConfig,
     availableAccents,
     setAccent,
+    isCompact,
+    setCompact,
+    toggleCompact,
+    glassEffect,
+    setGlassEffect,
+    toggleGlassEffect,
   };
 
   return (

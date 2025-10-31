@@ -84,18 +84,20 @@ function BotFilters({
   return (
     <div className="space-y-2 sm:space-y-3">
       {/* Refresh Button */}
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onRefresh}
           disabled={isLoading}
-          className="gap-1.5 h-8 px-3"
+          className="gap-1.5 min-w-0"
+          title="Refresh data"
+          iconLeft={<RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isLoading ? "animate-spin" : ""}`} />}
         >
-          <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? "animate-spin" : ""}`} />
-          <span className="text-xs sm:text-sm">Refresh</span>
+          <span className="hidden sm:inline">Refresh Data</span>
+          <span className="sm:hidden">Refresh</span>
         </Button>
-      </div>
+      </div> */}
 
       {/* Data Filters */}
       <DataFilters

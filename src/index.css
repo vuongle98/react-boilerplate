@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import theme variables */
-@import './styles/themes.css';
-
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -242,6 +239,9 @@ All colors MUST be HSL.
     box-shadow: 0 10px 30px -10px hsl(var(--foreground) / 0.15);
   }
 }
+
+/* Import theme variables after base definitions so they take precedence */
+@import './styles/themes.css';
 
 @layer base {
   * {

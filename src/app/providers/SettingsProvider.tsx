@@ -229,7 +229,7 @@ export const useSettings = () => {
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { setTheme, setAccent } = useTheme();
+  const { theme: currentTheme, accent: currentAccent } = useTheme();
   const { isAuthenticated } = useAuth();
 
   // Initialize system settings
@@ -260,12 +260,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const applyUI = useCallback(
     (merged: Settings) => {
-      // Theme
-      setTheme(merged.theme?.mode);
-      setAccent(merged.theme?.accent);
+      // Theme is now managed by ThemeProvider only
+      // SettingsProvider reads theme state but doesn't set it
       // Future: i18n, layout changes can be reacted to by consumers via context
     },
-    [setTheme, setAccent]
+    []
   );
 
   const computeAndApply = useCallback(
