@@ -37,7 +37,7 @@ interface ProgressBarProps {
 }
 
 const baseTransition = {
-  duration: 0.4,
+  duration: 0.2,
   ease: "easeOut" as const,
 };
 
@@ -48,7 +48,7 @@ const animationVariants: Record<AnimationType, Variants> = {
       opacity: 1,
       transition: {
         ...baseTransition,
-        duration: 0.4,
+        duration: 0.2,
       },
     },
   },
@@ -91,7 +91,7 @@ const animationVariants: Record<AnimationType, Variants> = {
       scale: 1,
       transition: {
         ...baseTransition,
-        duration: 0.3,
+        duration: 0.2,
       },
     },
   },
@@ -115,7 +115,7 @@ const animationVariants: Record<AnimationType, Variants> = {
       rotateY: 0,
       transition: {
         ...baseTransition,
-        duration: 0.6,
+        duration: 0.4,
       },
     },
   },
@@ -126,7 +126,7 @@ const animationVariants: Record<AnimationType, Variants> = {
       scale: 1,
       transition: {
         ...baseTransition,
-        duration: 0.5,
+        duration: 0.3,
         ease: [0.175, 0.885, 0.32, 1.275],
       },
     },

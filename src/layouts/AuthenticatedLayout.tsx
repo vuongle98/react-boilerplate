@@ -8,7 +8,7 @@ interface AuthenticatedLayoutProps {
 export const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
   return (
     <SidebarProvider>
-      <main className="flex-1 py-4 px-2 sm:py-6 sm:px-4 md:py-8 md:px-6">{children}</main>
+      <main className="flex-1 py-2 px-1 sm:py-3 sm:px-2 md:py-4 md:px-3">{children}</main>
     </SidebarProvider>
   );
 };

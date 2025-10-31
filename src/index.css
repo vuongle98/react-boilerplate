@@ -46,7 +46,7 @@ All colors MUST be HSL.
     --input: 240 5.9% 90%;
     --ring: 217 91% 60%;
 
-    --radius: 0.75rem;
+    --radius: 0.375rem;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));

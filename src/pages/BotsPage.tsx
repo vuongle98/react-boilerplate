@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Plus, RefreshCw } from "lucide-react";
+import { FadeUp, SlideUp, Scale } from "@/shared/ui/animate";
+import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { BotFilters } from "@/features/bots/components/BotFilters";
 import { BotForm } from "@/features/bots/components/BotForm";
@@ -73,9 +74,10 @@ export function BotsPage() {
         size="sm"
         onClick={forceRefresh}
         disabled={isLoading}
-        className="gap-2"
+        className="gap-1.5 sm:gap-2 min-w-0 sm:min-w-fit"
+        title="Refresh data"
       >
-        <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? "animate-spin" : ""}`} />
+        <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isLoading ? "animate-spin" : ""}`} />
         <span className="hidden sm:inline">Refresh Data</span>
         <span className="sm:hidden">Refresh</span>
       </Button>
@@ -83,64 +85,79 @@ export function BotsPage() {
         variant="outline"
         size="sm"
         onClick={clearAllCache}
+        className="gap-1.5 sm:gap-2 min-w-0 sm:min-w-fit"
+        title="Clear all cached data"
       >
+        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         <span className="hidden sm:inline">Clear Cache</span>
-        <span className="sm:hidden">Cache</span>
+        <span className="sm:hidden">Clear Cache</span>
       </Button>
     </>
   ), [forceRefresh, isLoading, clearAllCache]);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-3 sm:space-y-4">
       {/* Breadcrumbs */}
-      <Breadcrumbs />
+      <FadeUp delay={50}>
+        <Breadcrumbs />
+      </FadeUp>
 
       {/* Page Header with Actions */}
-      <PageHeader
-        title="Bots Management"
-        description="Manage your Telegram bots and their configurations"
-        showAddButton
-        addButtonText="Create Bot"
-        onAddClick={() => setIsFormOpen(true)}
-      >
-        {pageHeaderActions}
-      </PageHeader>
+      <SlideUp delay={100}>
+        <PageHeader
+          title="Bots Management"
+          description="Manage your Telegram bots and their configurations"
+          showAddButton
+          addButtonText="Create Bot"
+          onAddClick={() => setIsFormOpen(true)}
+        >
+          {pageHeaderActions}
+        </PageHeader>
+      </SlideUp>
 
       {/* Main Content */}
-      <Card>
-        <CardHeader className="pb-2 sm:pb-4">
-          <CardTitle className="text-lg sm:text-xl">All Bots</CardTitle>
-          <CardDescription className="text-sm">
-            A complete list of all bots with advanced filtering and pagination
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 sm:space-y-4">
-          {/* Filters */}
-          <BotFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            onReset={resetFilters}
-            onRefresh={refresh}
-            isLoading={isLoading}
-          />
+      <Scale delay={200}>
+        <Card>
+          <FadeUp delay={250}>
+            <CardHeader className="pb-1 sm:pb-1.5">
+              <CardTitle className="text-lg sm:text-xl">All Bots</CardTitle>
+              <CardDescription className="text-sm">
+                A complete list of all bots with advanced filtering and pagination
+              </CardDescription>
+            </CardHeader>
+          </FadeUp>
+          <CardContent className="space-y-2 sm:space-y-2.5">
+            {/* Filters */}
+            <FadeUp delay={300}>
+              <BotFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                onReset={resetFilters}
+                onRefresh={refresh}
+                isLoading={isLoading}
+              />
+            </FadeUp>
 
-          {/* Table with Integrated Pagination */}
-          <BotTable
-            bots={bots}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            showPagination={true}
-            page={page}
-            pageSize={pageSize}
-            totalItems={totalItems}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            onPageSizeChange={setPageSize}
-            pageSizeOptions={[5, 10, 20, 50]}
-          />
-        </CardContent>
-      </Card>
+            {/* Table with Integrated Pagination */}
+            <FadeUp delay={350}>
+              <BotTable
+                bots={bots}
+                isLoading={isLoading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                showPagination={true}
+                page={page}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[5, 10, 20, 50]}
+              />
+            </FadeUp>
+          </CardContent>
+        </Card>
+      </Scale>
 
       {/* Create/Edit Form Dialog */}
       <BotForm
