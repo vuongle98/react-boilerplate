@@ -188,64 +188,83 @@ export const componentTokens = {
 export const getVariantClasses = {
   button: {
     primary: `
-      bg-primary text-primary-foreground
+      bg-primary text-primary-foreground shadow-sm
+      hover:bg-primary/90 hover:shadow-md
       active:bg-primary/80 active:scale-[0.98]
-      focus:ring-2 focus:ring-primary/50 focus:ring-offset-2
-      disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed
+      focus:outline-none
+      disabled:bg-neutral-300 disabled:text-neutral-500 disabled:shadow-none disabled:cursor-not-allowed
       dark:disabled:bg-neutral-700 dark:disabled:text-neutral-400
-      transition-all duration-200 ease-out
+      transition-all duration-75 ease-out
     `,
     secondary: `
-      bg-secondary text-secondary-foreground border border-neutral-300
+      bg-secondary text-secondary-foreground border border-neutral-200 shadow-sm
+      hover:bg-secondary/80 hover:shadow-md hover:border-neutral-300
       active:bg-secondary/70 active:scale-[0.98]
-      focus:ring-2 focus:ring-primary/50 focus:ring-offset-2
-      disabled:bg-neutral-100 disabled:text-neutral-400 disabled:cursor-not-allowed
-      dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-600
+      focus:outline-none
+      disabled:bg-neutral-100 disabled:text-neutral-400 disabled:border-neutral-200 disabled:shadow-none disabled:cursor-not-allowed
+      dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700
+      dark:hover:bg-neutral-700 dark:hover:border-neutral-600
       dark:active:bg-neutral-600
-      transition-all duration-200 ease-out
+      transition-all duration-75 ease-out
+    `,
+    outline: `
+      border-2 border-primary bg-transparent text-primary shadow-sm
+      hover:bg-primary hover:text-primary-foreground hover:shadow-md
+      active:bg-primary/90 active:scale-[0.98]
+      focus:outline-none
+      disabled:border-neutral-300 disabled:text-neutral-400 disabled:bg-transparent disabled:shadow-none disabled:cursor-not-allowed
+      dark:border-primary dark:text-primary
+      dark:hover:bg-primary dark:hover:text-primary-foreground
+      dark:active:bg-primary/90
+      dark:disabled:border-neutral-700 dark:disabled:text-neutral-500
+      transition-all duration-75 ease-out
     `,
     ghost: `
-      text-neutral-600
+      text-neutral-700 bg-transparent shadow-none
+      hover:bg-neutral-100 hover:shadow-sm
       active:bg-neutral-200 active:scale-[0.98]
-      focus:ring-2 focus:ring-primary/50 focus:ring-offset-2
-      disabled:text-neutral-400 disabled:cursor-not-allowed
-      dark:text-neutral-400 dark:active:bg-neutral-700
-      transition-all duration-200 ease-out
+      focus:outline-none
+      disabled:text-neutral-400 disabled:bg-transparent disabled:shadow-none disabled:cursor-not-allowed
+      dark:text-neutral-300 dark:hover:bg-neutral-800 dark:active:bg-neutral-700
+      transition-all duration-75 ease-out
     `,
     danger: `
-      bg-destructive text-destructive-foreground
-      active:bg-destructive/80 active:scale-[0.98]
-      focus:ring-2 focus:ring-destructive/50 focus:ring-offset-2
-      disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed
+      bg-red-600 text-white shadow-sm
+      hover:bg-red-700 hover:shadow-md
+      active:bg-red-800 active:scale-[0.98]
+      focus:outline-none
+      disabled:bg-neutral-300 disabled:text-neutral-500 disabled:shadow-none disabled:cursor-not-allowed
+      dark:bg-red-700 dark:hover:bg-red-600 dark:active:bg-red-800
       dark:disabled:bg-neutral-700 dark:disabled:text-neutral-400
-      transition-all duration-200 ease-out
+      transition-all duration-75 ease-out
     `,
     success: `
-      bg-success text-white
-      active:bg-success/80 active:scale-[0.98]
-      focus:ring-2 focus:ring-success/50 focus:ring-offset-2
-      disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed
+      bg-green-600 text-white shadow-sm
+      hover:bg-green-700 hover:shadow-md
+      active:bg-green-800 active:scale-[0.98]
+      focus:outline-none
+      disabled:bg-neutral-300 disabled:text-neutral-500 disabled:shadow-none disabled:cursor-not-allowed
+      dark:bg-green-700 dark:hover:bg-green-600 dark:active:bg-green-800
       dark:disabled:bg-neutral-700 dark:disabled:text-neutral-400
-      transition-all duration-200 ease-out
+      transition-all duration-75 ease-out
     `,
   },
 
   input: {
     default: `
       w-full bg-white border border-neutral-300 rounded-md text-neutral-900 placeholder:text-neutral-500
-      focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:shadow-lg focus:shadow-primary-500/10
+      focus:outline-none
       disabled:bg-neutral-50 disabled:text-neutral-400 disabled:border-neutral-200 disabled:cursor-not-allowed
       dark:bg-neutral-900 dark:border-neutral-600 dark:text-neutral-100 dark:placeholder:text-neutral-400
-      dark:focus:border-primary-400 dark:focus:ring-primary-400/20
       dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500 dark:disabled:border-neutral-700
-      transition-all duration-200 ease-out
+      transition-all duration-75 ease-out
     `,
     error: `
       w-full bg-white border border-destructive-300 rounded-md text-neutral-900 placeholder:text-neutral-500
-      focus:border-destructive-500 focus:ring-2 focus:ring-destructive-500/20 focus:shadow-lg focus:shadow-destructive-500/10
+      focus:outline-none
       dark:bg-neutral-900 dark:border-destructive-600 dark:text-neutral-100 dark:placeholder:text-neutral-400
-      dark:focus:border-destructive-400 dark:focus:ring-destructive-400/20
-      transition-all duration-200 ease-out
+      dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500 dark:disabled:border-neutral-700
+      transition-all duration-75 ease-out
     `,
   },
 
@@ -264,12 +283,12 @@ export const getVariantClasses = {
 // Animation utilities
 export const animations = {
   glow: 'shadow-lg shadow-primary-500/25 dark:shadow-primary-400/25',
-  scale: 'active:scale-[0.98] transition-transform duration-150',
+  scale: '',
 } as const;
 
 // Accessibility utilities
 export const a11y = {
-  focus: 'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+  focus: 'focus:outline-none',
   srOnly: 'sr-only',
   reducedMotion: 'motion-reduce:transition-none motion-reduce:animate-none',
 } as const;

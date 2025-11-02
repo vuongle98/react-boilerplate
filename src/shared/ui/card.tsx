@@ -16,9 +16,9 @@ const cardVariants = cva(
       },
       padding: {
         none: "p-0",
-        sm: `p-4 ${componentTokens.card.padding.sm}`,
-        md: `p-5 ${componentTokens.card.padding.md}`,
-        lg: `p-6 ${componentTokens.card.padding.lg}`,
+        sm: `p-2 ${componentTokens.card.padding.sm}`,
+        md: `p-4 ${componentTokens.card.padding.md}`,
+        lg: `p-5 ${componentTokens.card.padding.lg}`,
       },
     },
     defaultVariants: {

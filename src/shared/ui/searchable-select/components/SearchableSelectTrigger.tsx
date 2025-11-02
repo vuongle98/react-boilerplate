@@ -1,18 +1,37 @@
 import { SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { Option } from "@/shared/types/common";
+import React, { useMemo, useRef } from "react";
 import { SearchableSelectTriggerProps } from "../types";
 import { useSearchableSelectContext } from "./SearchableSelectRoot";
 
-export function SearchableSelectTrigger<T>({
+export const SearchableSelectTrigger = React.memo(function SearchableSelectTrigger<T>({
   value,
-  placeholder = "Select an option",
+  placeholder,
   disabled = false,
   multiple = false,
   options,
 }: SearchableSelectTriggerProps<T>) {
-  const { state, actions } = useSearchableSelectContext<T>();
+  // Temporarily disabled to focus on infinite loop
+  // console.log('🔄 SearchableSelectTrigger rendering', {
+  //   placeholder,
+  //   disabled,
+  //   multiple,
+  //   valueCount: Array.isArray(value) ? value.length : 0,
+  //   hasOptions: !!options
+  // });
 
-  const getDisplayValue = (): string | null => {
+  const { hook: { state }, config } = useSearchableSelectContext<T>();
+
+  // Use placeholder from props or from config
+  const finalPlaceholder = placeholder ?? config.ui.placeholder ?? "Select an option";
+
+  // Use options from props or from context state
+  const availableOptions = options || state.allOptions;
+
+  // Stringify value for stable comparison
+  const valueString = useMemo(() => JSON.stringify(value), [value]);
+
+  const displayValue = useMemo((): string | null => {
     if (!Array.isArray(value) || value.length === 0) return null;
 
     if (multiple) {
@@ -28,21 +47,35 @@ export function SearchableSelectTrigger<T>({
     }
 
     // If it's a string, find the corresponding option label
-    if (typeof selectedValue === 'string' && options) {
-      const option = options.find((opt: any) =>
+    if (typeof selectedValue === 'string' && availableOptions) {
+      const option = availableOptions.find((opt: any) =>
         opt && typeof opt === 'object' && opt.value === selectedValue
       );
       return option ? (typeof option === 'object' && 'label' in option ? String(option.label) : selectedValue) : selectedValue;
     }
 
     return String(selectedValue);
-  };
+  }, [valueString, multiple, availableOptions.length]);
 
   return (
     <SelectTrigger className="w-full">
-      <SelectValue placeholder={placeholder}>
-        {getDisplayValue()}
+      <SelectValue placeholder={finalPlaceholder}>
+        {displayValue}
       </SelectValue>
     </SelectTrigger>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if value or multiple changed
+  const shouldNotRerender = (
+    JSON.stringify(prevProps.value) === JSON.stringify(nextProps.value) &&
+    prevProps.multiple === nextProps.multiple &&
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.placeholder === nextProps.placeholder
+  );
+
+  if (!shouldNotRerender) {
+    console.log('🔄 SearchableSelectTrigger props changed, re-rendering');
+  }
+
+  return shouldNotRerender;
+}) as <T>(props: SearchableSelectTriggerProps<T>) => JSX.Element;

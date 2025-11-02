@@ -10,7 +10,7 @@ const selectTriggerVariants = cva(
     // Base styles
     "flex w-full items-center justify-between rounded-lg border text-sm",
     "bg-white dark:bg-neutral-900",
-    "transition-all duration-200 ease-out",
+    "transition-all duration-75 ease-out",
 
     // Focus styles
     getFocusStyles(),
@@ -62,7 +62,7 @@ const SelectTrigger = React.forwardRef<
     )}
     {...props}
   >
-    <SelectValue placeholder={placeholder} className="[&>span]:line-clamp-1" />
+    <SelectValue placeholder={placeholder ?? "Select an option"} className="[&>span]:line-clamp-1" />
     <SelectPrimitive.Icon asChild>
       <ChevronDown className="h-4 w-4 opacity-50" />
     </SelectPrimitive.Icon>

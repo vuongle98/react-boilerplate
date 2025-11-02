@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useMemo, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -32,6 +32,7 @@ import { Separator } from "@/shared/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { LoadingSpinner } from "@/shared/components/loading";
+import { ConfirmationDialog } from "@/shared/components/dialogs/ConfirmationDialog";
 import { MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
@@ -80,7 +81,7 @@ export interface DataTableProps<T> {
   pageSizeOptions?: number[];
 }
 
-export function DataTable<T extends { id: string | number }>({
+function DataTableComponent<T extends { id: string | number }>({
   data,
   columns,
   actions = [],
@@ -109,8 +110,8 @@ export function DataTable<T extends { id: string | number }>({
   const [deleteAction, setDeleteAction] = useState<Action<T> | null>(null);
   const isMobile = useIsMobile();
 
-  // Helper function to render skeleton table rows
-  const renderSkeletonTableRows = () => {
+  // Memoized skeleton table rows to prevent recreation
+  const skeletonTableRows = useMemo(() => {
     return [...Array(loadingRows)].map((_, i) => (
       <TableRow key={`skeleton-${i}`}>
         {columns.map((column) => (
@@ -125,10 +126,10 @@ export function DataTable<T extends { id: string | number }>({
         )}
       </TableRow>
     ));
-  };
+  }, [loadingRows, columns, actions.length]);
 
-  // Helper function to render skeleton mobile cards
-  const renderSkeletonMobileCards = () => {
+  // Memoized skeleton mobile cards to prevent recreation
+  const skeletonMobileCards = useMemo(() => {
     return [...Array(loadingRows)].map((_, i) => (
       <Card key={`skeleton-mobile-${i}`}>
         <CardContent className="p-4">
@@ -150,29 +151,29 @@ export function DataTable<T extends { id: string | number }>({
         </CardContent>
       </Card>
     ));
-  };
+  }, [loadingRows, columns, actions.length]);
 
-  const handleActionClick = (action: Action<T>, item: T) => {
+  const handleActionClick = useCallback((action: Action<T>, item: T) => {
     if (action.variant === "destructive") {
       setDeleteItem(item);
       setDeleteAction(action);
     } else {
       action.onClick(item);
     }
-  };
+  }, []);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     if (deleteAction && deleteItem) {
       deleteAction.onClick(deleteItem);
       setDeleteItem(null);
       setDeleteAction(null);
     }
-  };
+  }, [deleteAction, deleteItem]);
 
   // Render mobile card layout
   const renderMobileCards = () => {
     if (isLoading && loadingMode === "skeleton") {
-      return <div className="space-y-4">{renderSkeletonMobileCards()}</div>;
+      return <div className="space-y-2">{skeletonMobileCards}</div>;
     }
 
     if (data.length === 0) {
@@ -188,17 +189,89 @@ export function DataTable<T extends { id: string | number }>({
     }
 
     return (
-      <div className="space-y-4 relative">
+      <div className="space-y-2 relative">
         {data.map((item) => (
           <Card
             key={item.id}
             className={onRowClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
             onClick={() => onRowClick?.(item)}
           >
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="py-3">
+              <div className="space-y-2">
+                {/* Actions moved to top with smaller spacing */}
+                {actions.length > 0 && (
+                  <div className="flex justify-end pb-1 gap-1">
+                    {actions.length <= 6 ? (
+                      // Show individual buttons for 4 or fewer actions
+                      actions.map((action, index) => {
+                        const isDisabled =
+                          typeof action.disabled === "function"
+                            ? action.disabled(item)
+                            : action.disabled;
+
+                        return (
+                          <Button
+                            key={index}
+                            variant={action.variant === "destructive" ? "danger" : "ghost"}
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleActionClick(action, item);
+                            }}
+                            disabled={isDisabled}
+                            className="h-7 w-7"
+                            aria-label={action.label}
+                          >
+                            {action.icon && (
+                              <action.icon className="h-3 w-3" />
+                            )}
+                          </Button>
+                        );
+                      })
+                    ) : (
+                      // Show dropdown menu for more than 4 actions
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {actions.map((action, index) => {
+                            const isDisabled =
+                              typeof action.disabled === "function"
+                                ? action.disabled(item)
+                                : action.disabled;
+
+                            return (
+                              <DropdownMenuItem
+                                key={index}
+                                onClick={() => handleActionClick(action, item)}
+                                disabled={isDisabled}
+                                className={
+                                  action.variant === "destructive"
+                                    ? "text-destructive focus:text-destructive"
+                                    : ""
+                                }
+                              >
+                                {action.icon && (
+                                  <action.icon className="mr-2 h-4 w-4" />
+                                )}
+                                {action.label}
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                )}
+
                 {columns.map((column) => (
-                  <div key={String(column.key)} className="flex justify-between items-start gap-4">
+                  <div key={String(column.key)} className="flex justify-between items-start gap-3">
                     <div className="text-sm font-medium text-muted-foreground min-w-0 flex-shrink-0">
                       {column.label}:
                     </div>
@@ -210,46 +283,6 @@ export function DataTable<T extends { id: string | number }>({
                     </div>
                   </div>
                 ))}
-                {actions.length > 0 && (
-                  <div className="flex justify-end pt-2 border-t">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {actions.map((action, index) => {
-                          const isDisabled =
-                            typeof action.disabled === "function"
-                              ? action.disabled(item)
-                              : action.disabled;
-
-                          return (
-                            <DropdownMenuItem
-                              key={index}
-                              onClick={() => handleActionClick(action, item)}
-                              disabled={isDisabled}
-                              className={
-                                action.variant === "destructive"
-                                  ? "text-destructive focus:text-destructive"
-                                  : ""
-                              }
-                            >
-                              {action.icon && (
-                                <action.icon className="mr-2 h-4 w-4" />
-                              )}
-                              {action.label}
-                            </DropdownMenuItem>
-                          );
-                        })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -257,31 +290,13 @@ export function DataTable<T extends { id: string | number }>({
 
         {/* Pagination Controls for Mobile */}
         {showPagination && totalItems > 0 && (
-          <div className="flex items-center justify-between pt-4">
+          <div className="flex flex-col gap-4 pt-4">
             {/* Results Info */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center">
               <p className="text-sm text-muted-foreground">
                 Showing {page * pageSize + 1} to{" "}
                 {Math.min((page + 1) * pageSize, totalItems)} of {totalItems} results
               </p>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={(value) => {
-                  onPageSizeChange?.(Number(value));
-                  onPageChange?.(0); // Reset to first page when changing page size
-                }}
-              >
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {pageSizeOptions.map((size) => (
-                    <SelectItem key={size} value={size.toString()}>
-                      {size} per page
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Pagination */}
@@ -289,6 +304,13 @@ export function DataTable<T extends { id: string | number }>({
               page={page}
               totalPages={totalPages}
               onPageChange={onPageChange || (() => {})}
+              showPageSizeSelector={true}
+              pageSize={pageSize}
+              pageSizeOptions={pageSizeOptions}
+              onPageSizeChange={onPageSizeChange}
+              totalItems={totalItems}
+              showInfo={false}
+              showJumpToPage={totalPages > 5}
             />
           </div>
         )}
@@ -383,7 +405,7 @@ export function DataTable<T extends { id: string | number }>({
           </TableHeader>
           <TableBody>
             {isLoading && loadingMode === "skeleton" ? (
-              renderSkeletonTableRows()
+              skeletonTableRows
             ) : (
               data.map((item) => (
                 <TableRow
@@ -455,65 +477,48 @@ export function DataTable<T extends { id: string | number }>({
 
       {/* Pagination Controls for Desktop */}
       {showPagination && totalItems > 0 && (
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex flex-col gap-4 pt-4">
           {/* Results Info */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Showing {page * pageSize + 1} to{" "}
               {Math.min((page + 1) * pageSize, totalItems)} of {totalItems} results
             </p>
-            <Select
-              value={pageSize.toString()}
-              onValueChange={(value) => {
-                onPageSizeChange?.(Number(value));
-                onPageChange?.(0); // Reset to first page when changing page size
-              }}
-            >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {pageSizeOptions.map((size) => (
-                  <SelectItem key={size} value={size.toString()}>
-                    {size} per page
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
-          {/* Pagination */}
-          <PaginationControls
-            page={page}
-            totalPages={totalPages}
-            onPageChange={onPageChange || (() => {})}
-          />
+            {/* Pagination */}
+            <PaginationControls
+              page={page}
+              totalPages={totalPages}
+              onPageChange={onPageChange || (() => {})}
+              showPageSizeSelector={true}
+              pageSize={pageSize}
+              pageSizeOptions={pageSizeOptions}
+              onPageSizeChange={onPageSizeChange}
+              totalItems={totalItems}
+              showInfo={false}
+              showJumpToPage={totalPages > 5}
+            />
+          </div>
         </div>
       )}
 
       {/* Delete Confirmation Dialog */}
       {deleteAction && deleteItem && (
-        <AlertDialog open={!!deleteItem} onOpenChange={() => setDeleteItem(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                {deleteAction.label} "{(deleteItem as any).name || (deleteItem as any).title || `item ${deleteItem.id}`}". This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteConfirm}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {deleteAction.label}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmationDialog
+          open={!!deleteItem}
+          onOpenChange={() => setDeleteItem(null)}
+          title="Are you sure?"
+          description={`${deleteAction.label} "${(deleteItem as any).name || (deleteItem as any).title || `item ${deleteItem.id}`}". This action cannot be undone.`}
+          confirmText={deleteAction.label}
+          onConfirm={handleDeleteConfirm}
+          variant="danger"
+        />
       )}
     </>
   );
 }
+
+export const DataTable = memo(DataTableComponent) as <T extends { id: string | number }>(
+  props: DataTableProps<T>
+) => JSX.Element;
 

@@ -27,8 +27,7 @@ export function useVariantClasses() {
  */
 export function getFocusStyles(color: string = 'primary-500') {
   return `
-    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-${color}/50 focus-visible:ring-offset-2
-    dark:focus-visible:ring-${color}/30
+    focus-visible:outline-none
   `;
 }
 
@@ -37,8 +36,8 @@ export function getFocusStyles(color: string = 'primary-500') {
  */
 export function getInteractiveStyles(variant: 'glow' | 'scale' = 'scale') {
   const styles = {
-    glow: 'hover:shadow-lg hover:shadow-primary-500/25 active:shadow-md active:shadow-primary-500/10 transition-shadow duration-200',
-    scale: 'active:scale-[0.98] transition-transform duration-150',
+    glow: 'hover:shadow-lg hover:shadow-primary-500/25 active:shadow-md active:shadow-primary-500/10 transition-shadow duration-100',
+    scale: '', // Remove scaling effect to prevent flash
   };
 
   return styles[variant];
@@ -71,11 +70,11 @@ export function getIconButtonStyles(size: 'sm' | 'md' | 'lg' = 'md') {
     ${sizes[size]} rounded-md
     text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100
     active:bg-neutral-200 active:scale-95
-    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:ring-offset-2
+    focus-visible:outline-none
     disabled:text-neutral-400 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-neutral-400
     dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-800
     dark:active:bg-neutral-700 dark:disabled:text-neutral-600
-    transition-all duration-200 ease-out
+    transition-all duration-75 ease-out
   `;
 }
 
@@ -111,11 +110,12 @@ export function getModalBackdropStyles() {
  */
 export function getModalContentStyles() {
   return `
-    fixed left-[50%] top-[50%] z-50 w-full max-w-lg
+    fixed left-[50%] top-[50%] z-50 w-[calc(100%-2rem)] max-w-lg
     translate-x-[-50%] translate-y-[-50%] gap-4 border
     bg-white p-6 shadow-lg duration-200 rounded-lg
     animate-in fade-in-0 zoom-in-95 duration-200
     border-neutral-200 dark:bg-neutral-900 dark:border-neutral-700
+    sm:w-[calc(100%-3rem)] md:w-[calc(100%-4rem)] lg:max-w-lg
   `;
 }
 
@@ -158,7 +158,7 @@ export function getTableRowStyles(index: number, isHoverable: boolean = true) {
     : 'bg-neutral-50 dark:bg-neutral-800/50';
 
   const hover = isHoverable
-    ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150'
+    ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-75'
     : '';
 
   return `${zebra} ${hover}`;

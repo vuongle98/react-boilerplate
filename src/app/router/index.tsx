@@ -3,9 +3,9 @@ import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import NotFound from "@/shared/components/navigation/NotFound";
 import { AuthenticatedLayout } from "@/layouts/AuthenticatedLayout";
 import { PublicLayout } from "@/layouts/PublicLayout";
-import { Home } from "@/pages/Home";
 import { BotsPage } from "@/pages/BotsPage";
 import { ComponentsDemo } from "@/pages/ComponentsDemo";
+import { HomePage } from "@/pages/HomePage";
 
 /**
  * AppRouter defines all application routes
@@ -22,7 +22,7 @@ export function AppRouter() {
           </PublicLayout>
         }
       >
-        <Route path="/public" element={<Home />} />
+        <Route path="/" element={<HomePage />} />
       </Route>
 
       {/* Protected routes - Wrapped in a single ProtectedRoute */}
@@ -35,7 +35,7 @@ export function AppRouter() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/bots" element={<BotsPage />} />
         <Route path="/components" element={<ComponentsDemo />} />
       </Route>

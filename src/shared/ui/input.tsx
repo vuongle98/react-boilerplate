@@ -15,7 +15,7 @@ const inputVariants = cva(
     getFocusStyles(),
 
     // Transitions
-    "transition-all duration-200 ease-out",
+    "transition-all duration-75 ease-out",
   ],
   {
     variants: {
