@@ -1,16 +1,38 @@
-import { LoadingSpinner } from "@/shared/components/loading";
 import { useKeycloak } from "@/features/auth/contexts/KeycloakContext";
-import { ReactNode, useEffect, useState } from "react";
+import { LoadingSpinner } from "@/shared/components/loading";
+import { useAdminDashboardInit } from "@/shared/hooks/use-admin-dashboard-init";
+import { ReactNode, useEffect } from "react";
 import { toast } from "sonner";
 
 interface AppInitializerProps {
   children: ReactNode;
 }
 
+// Separate component for admin dashboard initialization
+function AdminDashboardInitializer({ children }: { children: ReactNode }) {
+  const { isLoading: adminLoading, error: adminError } =
+    useAdminDashboardInit();
+
+  // Show loading screen during admin initialization
+  if (adminLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <LoadingSpinner />
+          <p className="text-sm text-muted-foreground">
+            Initializing dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 export function AppInitializer({ children }: AppInitializerProps) {
   const { login, isAuthenticated, isLoading, initializationFailed } =
     useKeycloak();
-  const [initializationComplete, setInitializationComplete] = useState(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -18,11 +40,6 @@ export function AppInitializer({ children }: AppInitializerProps) {
         if (!isAuthenticated && !initializationFailed && !isLoading) {
           // Initialize Keycloak and wait for authentication
           await login();
-        }
-
-        if (isAuthenticated) {
-          // Mark initialization as complete
-          setInitializationComplete(true);
         }
       } catch (error) {
         console.error("App initialization failed:", error);
@@ -33,35 +50,34 @@ export function AppInitializer({ children }: AppInitializerProps) {
     initializeApp();
   }, [isAuthenticated, initializationFailed, isLoading, login]);
 
-  // Show loading screen until fully initialized
-  if (!initializationComplete || isLoading) {
+  // Show loading screen during authentication
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <LoadingSpinner />
-          <div className="text-sm text-muted-foreground">
-            {isLoading ? "Initializing..." : "Loading application..."}
+          <p className="text-sm text-muted-foreground">Authenticating...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if authentication failed
+  if (initializationFailed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-destructive text-center">
+            <p className="font-medium">Authentication failed</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Please try refreshing the page or contact support
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  // Show fallback for authentication failures
-  if (initializationFailed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold mb-2">
-            Authentication Unavailable
-          </h2>
-          <p className="text-muted-foreground">
-            Please configure Keycloak to enable authentication.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+  // Once authenticated, initialize admin dashboard
+  return <AdminDashboardInitializer>{children}</AdminDashboardInitializer>;
 }

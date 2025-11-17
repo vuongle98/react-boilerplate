@@ -1,14 +1,14 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
-import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "@/features/auth/contexts/AuthContext";
+import { KeycloakProvider } from "@/features/auth/contexts/KeycloakContext";
+import { AppInitializer } from "@/shared/components/layout/AppInitializer";
 import { Toaster as Sonner } from "@/shared/ui/sonner";
 import { Toaster } from "@/shared/ui/toaster";
 import { TooltipProvider } from "@/shared/ui/tooltip";
-import { ThemeProvider } from "./ThemeProvider";
-import { AppInitializer } from "@/shared/components/layout/AppInitializer";
-import { KeycloakProvider } from "@/features/auth/contexts/KeycloakContext";
-import { AuthProvider } from "@/features/auth/contexts/AuthContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactNode } from "react";
+import { BrowserRouter } from "react-router-dom";
 import { SettingsProvider } from "./SettingsProvider";
+import { ThemeProvider } from "./ThemeProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,8 +38,8 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <KeycloakProvider config={keycloakConfig}>
       <ThemeProvider defaultTheme="system">
-        <AppInitializer>
-          <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <AppInitializer>
             <BrowserRouter>
               <AuthProvider>
                 <SettingsProvider>
@@ -51,12 +51,11 @@ export function AppProviders({ children }: AppProvidersProps) {
                 </SettingsProvider>
               </AuthProvider>
             </BrowserRouter>
-          </QueryClientProvider>
-        </AppInitializer>
+          </AppInitializer>
+        </QueryClientProvider>
       </ThemeProvider>
     </KeycloakProvider>
   );
 }
 
 export { queryClient };
-

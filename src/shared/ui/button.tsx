@@ -1,8 +1,8 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn, getFocusStyles, getInteractiveStyles } from "./utils"
-import { getVariantClasses, componentTokens } from "./theme"
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
+import { componentTokens, getVariantClasses } from "./theme";
+import { cn, getFocusStyles, getInteractiveStyles } from "./utils";
 
 const buttonVariants = cva(
   [
@@ -13,7 +13,7 @@ const buttonVariants = cva(
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
 
     // Interactive states
-    getInteractiveStyles('scale'),
+    getInteractiveStyles("scale"),
 
     // Focus styles
     getFocusStyles(),
@@ -42,35 +42,38 @@ const buttonVariants = cva(
       size: "md",
     },
   }
-)
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-  iconLeft?: React.ReactNode
-  iconRight?: React.ReactNode
-  loading?: boolean
-  loadingText?: string
+  asChild?: boolean;
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
+  loading?: boolean;
+  loadingText?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({
-    className,
-    variant,
-    size,
-    asChild = false,
-    iconLeft,
-    iconRight,
-    loading = false,
-    loadingText,
-    disabled,
-    children,
-    ...props
-  }, ref) => {
-    const Comp = asChild ? Slot : "button"
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      iconLeft,
+      iconRight,
+      loading = false,
+      loadingText,
+      disabled,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const Comp = asChild ? Slot : "button";
 
-    const isDisabled = disabled || loading
+    const isDisabled = disabled || loading;
 
     return (
       <Comp
@@ -109,10 +112,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         )}
       </Comp>
-    )
+    );
   }
-)
+);
 
-Button.displayName = "Button"
+Button.displayName = "Button";
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };

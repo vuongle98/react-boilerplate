@@ -1,8 +1,8 @@
+import { useTheme } from "@/app/providers/ThemeProvider";
+import { Monitor, Moon, Sun } from "lucide-react";
 import * as React from "react";
-import { Moon, Sun, Monitor, Settings } from "lucide-react";
 import { Button } from "./button";
 import { ThemeSettings } from "./theme-settings";
-import { useTheme } from "@/app/providers/ThemeProvider";
 
 interface ThemeToggleProps {
   size?: "sm" | "md" | "lg";
@@ -28,7 +28,11 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       case "system":
         return <Monitor className="h-4 w-4" />;
       default:
-        return isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />;
+        return isDarkMode ? (
+          <Moon className="h-4 w-4" />
+        ) : (
+          <Sun className="h-4 w-4" />
+        );
     }
   };
 

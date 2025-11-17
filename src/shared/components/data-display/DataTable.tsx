@@ -1,20 +1,7 @@
-import React, { memo, useMemo, useCallback } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+import { ConfirmationDialog } from "@/shared/components/dialogs/ConfirmationDialog";
+import { LoadingSpinner } from "@/shared/components/loading";
+import { PaginationControls } from "@/shared/components/pagination/PaginationControls";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,23 +13,42 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
-import { Separator } from "@/shared/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Checkbox } from "@/shared/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import { Input } from "@/shared/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { LoadingSpinner } from "@/shared/components/loading";
-import { ConfirmationDialog } from "@/shared/components/dialogs/ConfirmationDialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/ui/table";
 import { MoreVertical } from "lucide-react";
-import { useState } from "react";
-import { useIsMobile } from "@/shared/hooks/use-mobile";
-import { PaginationControls } from "@/shared/components/pagination/PaginationControls";
+import React, { memo, useCallback, useMemo, useState } from "react";
 
 export interface Column<T> {
   key: keyof T | string;
   label: string;
   render?: (value: any, item: T) => React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   sortable?: boolean;
 }
 
@@ -79,6 +85,19 @@ export interface DataTableProps<T> {
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
   pageSizeOptions?: number[];
+
+  // Bulk actions props
+  supportsBulkActions?: boolean;
+  canBulkDelete?: boolean;
+  canBulkUpdate?: boolean;
+  onBulkDelete?: (items: T[]) => void;
+  onBulkUpdate?: (items: T[], updates: Record<string, any>) => void;
+
+  // Selection state for bulk actions
+  selectedItems?: Set<string | number>;
+  onSelectAll?: (checked: boolean) => void;
+  onSelectItem?: (item: T, checked: boolean) => void;
+  onClearSelection?: () => void;
 }
 
 function DataTableComponent<T extends { id: string | number }>({
@@ -105,9 +124,23 @@ function DataTableComponent<T extends { id: string | number }>({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = [5, 10, 20, 50],
+
+  // Bulk actions props with defaults
+  supportsBulkActions = false,
+  canBulkDelete = false,
+  canBulkUpdate = false,
+  onBulkDelete,
+  onBulkUpdate,
+
+  // Selection state for bulk actions
+  selectedItems = new Set<string | number>(),
+  onSelectAll,
+  onSelectItem,
+  onClearSelection,
 }: DataTableProps<T>) {
   const [deleteItem, setDeleteItem] = useState<T | null>(null);
   const [deleteAction, setDeleteAction] = useState<Action<T> | null>(null);
+  const [jumpToPage, setJumpToPage] = useState("");
   const isMobile = useIsMobile();
 
   // Memoized skeleton table rows to prevent recreation
@@ -170,6 +203,14 @@ function DataTableComponent<T extends { id: string | number }>({
     }
   }, [deleteAction, deleteItem]);
 
+  const handleJumpToPage = useCallback(() => {
+    const pageNum = parseInt(jumpToPage, 10) - 1; // Convert to 0-based index
+    if (pageNum >= 0 && pageNum < totalPages && onPageChange) {
+      onPageChange(pageNum);
+      setJumpToPage("");
+    }
+  }, [jumpToPage, totalPages, onPageChange]);
+
   // Render mobile card layout
   const renderMobileCards = () => {
     if (isLoading && loadingMode === "skeleton") {
@@ -190,128 +231,247 @@ function DataTableComponent<T extends { id: string | number }>({
 
     return (
       <div className="space-y-2 relative">
+        {/* Select All for Mobile - shows when bulk actions supported */}
+        {supportsBulkActions && selectedItems.size === 0 && data.length > 0 && (
+          <div className="flex justify-end pb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSelectAll?.(true)}
+            >
+              Select All
+            </Button>
+          </div>
+        )}
+
         {data.map((item) => (
           <Card
             key={item.id}
-            className={onRowClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
+            className={
+              onRowClick
+                ? "cursor-pointer hover:shadow-md transition-shadow"
+                : ""
+            }
             onClick={() => onRowClick?.(item)}
           >
             <CardContent className="py-3">
               <div className="space-y-2">
-                {/* Actions moved to top with smaller spacing */}
-                {actions.length > 0 && (
-                  <div className="flex justify-end pb-1 gap-1">
-                    {actions.length <= 6 ? (
-                      // Show individual buttons for 4 or fewer actions
-                      actions.map((action, index) => {
-                        const isDisabled =
-                          typeof action.disabled === "function"
-                            ? action.disabled(item)
-                            : action.disabled;
-
-                        return (
-                          <Button
-                            key={index}
-                            variant={action.variant === "destructive" ? "danger" : "ghost"}
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleActionClick(action, item);
-                            }}
-                            disabled={isDisabled}
-                            className="h-7 w-7"
-                            aria-label={action.label}
-                          >
-                            {action.icon && (
-                              <action.icon className="h-3 w-3" />
-                            )}
-                          </Button>
-                        );
-                      })
-                    ) : (
-                      // Show dropdown menu for more than 4 actions
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {actions.map((action, index) => {
-                            const isDisabled =
-                              typeof action.disabled === "function"
-                                ? action.disabled(item)
-                                : action.disabled;
-
-                            return (
-                              <DropdownMenuItem
-                                key={index}
-                                onClick={() => handleActionClick(action, item)}
-                                disabled={isDisabled}
-                                className={
-                                  action.variant === "destructive"
-                                    ? "text-destructive focus:text-destructive"
-                                    : ""
-                                }
-                              >
-                                {action.icon && (
-                                  <action.icon className="mr-2 h-4 w-4" />
-                                )}
-                                {action.label}
-                              </DropdownMenuItem>
-                            );
-                          })}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-                )}
-
-                {columns.map((column) => (
-                  <div key={String(column.key)} className="flex justify-between items-start gap-3">
-                    <div className="text-sm font-medium text-muted-foreground min-w-0 flex-shrink-0">
-                      {column.label}:
+                {/* Actions and selection checkbox in one row */}
+                <div className="flex items-center justify-between">
+                  {/* Selection checkbox for bulk actions - positioned left */}
+                  {supportsBulkActions && (
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedItems.has(item.id)}
+                        onCheckedChange={(checked) =>
+                          onSelectItem?.(item, checked as boolean)
+                        }
+                        aria-label={`Select item ${item.id}`}
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        Select
+                      </span>
                     </div>
-                    <div className="text-sm flex-1 text-right">
-                      {column.render
-                        ? column.render(item[column.key as keyof T], item)
-                        : String(item[column.key as keyof T] || "")
-                      }
+                  )}
+
+                  {/* Actions moved to the right */}
+                  {actions.length > 0 && (
+                    <div className="flex gap-1">
+                      {actions.length <= 6 ? (
+                        // Show individual buttons for 4 or fewer actions
+                        actions.map((action, index) => {
+                          const isDisabled =
+                            typeof action.disabled === "function"
+                              ? action.disabled(item)
+                              : action.disabled;
+
+                          return (
+                            <Button
+                              key={index}
+                              variant={
+                                action.variant === "destructive"
+                                  ? "danger"
+                                  : "ghost"
+                              }
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleActionClick(action, item);
+                              }}
+                              disabled={isDisabled}
+                              className="h-7 w-7"
+                              aria-label={action.label}
+                            >
+                              {action.icon && (
+                                <action.icon className="h-3 w-3" />
+                              )}
+                            </Button>
+                          );
+                        })
+                      ) : (
+                        // Show dropdown menu for more than 4 actions
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {actions.map((action, index) => {
+                              const isDisabled =
+                                typeof action.disabled === "function"
+                                  ? action.disabled(item)
+                                  : action.disabled;
+
+                              return (
+                                <DropdownMenuItem
+                                  key={index}
+                                  onClick={() =>
+                                    handleActionClick(action, item)
+                                  }
+                                  disabled={isDisabled}
+                                  className={
+                                    action.variant === "destructive"
+                                      ? "text-destructive focus:text-destructive"
+                                      : ""
+                                  }
+                                >
+                                  {action.icon && (
+                                    <action.icon className="mr-2 h-4 w-4" />
+                                  )}
+                                  {action.label}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
+
+                {columns
+                  .filter((col) => col.key !== "selection") // Exclude selection column as it's handled above
+                  .map((column) => (
+                    <div
+                      key={String(column.key)}
+                      className="flex justify-between items-start gap-3"
+                    >
+                      <div className="text-sm font-medium text-muted-foreground min-w-0 flex-shrink-0">
+                        {column.label}:
+                      </div>
+                      <div className="text-sm flex-1 text-right">
+                        {column.render
+                          ? column.render(item[column.key as keyof T], item)
+                          : String(item[column.key as keyof T] || "")}
+                      </div>
+                    </div>
+                  ))}
               </div>
             </CardContent>
           </Card>
         ))}
 
-        {/* Pagination Controls for Mobile */}
+        {/* Enhanced Pagination Controls for Mobile */}
         {showPagination && totalItems > 0 && (
-          <div className="flex flex-col gap-4 pt-4">
-            {/* Results Info */}
-            <div className="flex items-center justify-center">
-              <p className="text-sm text-muted-foreground">
-                Showing {page * pageSize + 1} to{" "}
-                {Math.min((page + 1) * pageSize, totalItems)} of {totalItems} results
-              </p>
-            </div>
+          <div className="mt-6 space-y-4">
+            {/* Enhanced pagination controls */}
+            <div className="flex flex-col gap-3">
+              {/* Interactive page size selector */}
+              {onPageSizeChange &&
+                pageSizeOptions &&
+                pageSizeOptions.length > 1 && (
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-sm text-muted-foreground">Show:</span>
+                    <Select
+                      value={pageSize.toString()}
+                      onValueChange={(value) => onPageSizeChange(Number(value))}
+                    >
+                      <SelectTrigger className="w-24 h-8 border-muted-foreground/20 hover:border-primary focus:border-primary transition-colors">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pageSizeOptions.map((size) => (
+                          <SelectItem key={size} value={size.toString()}>
+                            {size}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-sm text-muted-foreground">
+                      per page
+                    </span>
+                  </div>
+                )}
 
-            {/* Pagination */}
-            <PaginationControls
-              page={page}
-              totalPages={totalPages}
-              onPageChange={onPageChange || (() => {})}
-              showPageSizeSelector={true}
-              pageSize={pageSize}
-              pageSizeOptions={pageSizeOptions}
-              onPageSizeChange={onPageSizeChange}
-              totalItems={totalItems}
-              showInfo={false}
-              showJumpToPage={totalPages > 5}
-            />
+              {/* Enhanced pagination controls with integrated navigation */}
+              {totalPages > 1 && (
+                <div className="bg-background border rounded-lg p-3 shadow-sm space-y-3">
+                  {/* Quick navigation row (when many pages) */}
+
+                  <div className="flex items-center justify-between gap-2 pb-2 border-b">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onPageChange?.(0)}
+                      disabled={page === 0}
+                      className="text-xs px-2"
+                    >
+                      First
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        Go to:
+                      </span>
+                      <Input
+                        type="number"
+                        value={jumpToPage}
+                        onChange={(e) => setJumpToPage(e.target.value)}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleJumpToPage()
+                        }
+                        placeholder={`${page + 1}`}
+                        className="w-12 h-7 text-center text-xs"
+                        min={1}
+                        max={totalPages}
+                      />
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onPageChange?.(totalPages - 1)}
+                      disabled={page >= totalPages - 1}
+                      className="text-xs px-2"
+                    >
+                      Last
+                    </Button>
+                  </div>
+
+                  {/* Main pagination controls */}
+                  <PaginationControls
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={onPageChange || (() => {})}
+                    showPageSizeSelector={false} // Hide since we show it above
+                    pageSize={pageSize}
+                    pageSizeOptions={pageSizeOptions}
+                    onPageSizeChange={onPageSizeChange}
+                    totalItems={totalItems}
+                    showInfo={false}
+                    showJumpToPage={false} // Hide jump to page since we show it above for mobile
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -362,12 +522,19 @@ function DataTableComponent<T extends { id: string | number }>({
 
         {/* Delete Confirmation Dialog */}
         {deleteAction && deleteItem && (
-          <AlertDialog open={!!deleteItem} onOpenChange={() => setDeleteItem(null)}>
+          <AlertDialog
+            open={!!deleteItem}
+            onOpenChange={() => setDeleteItem(null)}
+          >
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {deleteAction.label} "{(deleteItem as any).name || (deleteItem as any).title || `item ${deleteItem.id}`}". This action cannot be undone.
+                  {deleteAction.label} "
+                  {(deleteItem as any).name ||
+                    (deleteItem as any).title ||
+                    `item ${deleteItem.id}`}
+                  ". This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -389,12 +556,18 @@ function DataTableComponent<T extends { id: string | number }>({
   // Desktop table layout
   return (
     <>
-      <div className={`rounded-md border relative ${className}`}>
-        <Table>
+      <div
+        className={`rounded-md border relative overflow-x-auto ${className}`}
+      >
+        <Table style={{ tableLayout: "fixed" }}>
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={String(column.key)} className={column.className}>
+                <TableHead
+                  key={String(column.key)}
+                  className={column.className}
+                  style={column.style}
+                >
                   {column.label}
                 </TableHead>
               ))}
@@ -404,66 +577,67 @@ function DataTableComponent<T extends { id: string | number }>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && loadingMode === "skeleton" ? (
-              skeletonTableRows
-            ) : (
-              data.map((item) => (
-                <TableRow
-                  key={item.id}
-                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
-                  onClick={() => onRowClick?.(item)}
-                >
-                  {columns.map((column) => (
-                    <TableCell key={String(column.key)}>
-                      {column.render
-                        ? column.render(item[column.key as keyof T], item)
-                        : String(item[column.key as keyof T] || "")
-                      }
-                    </TableCell>
-                  ))}
-                  {actions.length > 0 && (
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {actions.map((action, index) => {
-                            const isDisabled =
-                              typeof action.disabled === "function"
-                                ? action.disabled(item)
-                                : action.disabled;
+            {isLoading && loadingMode === "skeleton"
+              ? skeletonTableRows
+              : data.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className={
+                      onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
+                    }
+                    onClick={() => onRowClick?.(item)}
+                  >
+                    {columns.map((column) => (
+                      <TableCell key={String(column.key)} style={column.style}>
+                        {column.render
+                          ? column.render(item[column.key as keyof T], item)
+                          : String(item[column.key as keyof T] || "")}
+                      </TableCell>
+                    ))}
+                    {actions.length > 0 && (
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {actions.map((action, index) => {
+                              const isDisabled =
+                                typeof action.disabled === "function"
+                                  ? action.disabled(item)
+                                  : action.disabled;
 
-                            return (
-                              <DropdownMenuItem
-                                key={index}
-                                onClick={() => handleActionClick(action, item)}
-                                disabled={isDisabled}
-                                className={
-                                  action.variant === "destructive"
-                                    ? "text-destructive focus:text-destructive"
-                                    : ""
-                                }
-                              >
-                                {action.icon && (
-                                  <action.icon className="mr-2 h-4 w-4" />
-                                )}
-                                {action.label}
-                              </DropdownMenuItem>
-                            );
-                          })}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
+                              return (
+                                <DropdownMenuItem
+                                  key={index}
+                                  onClick={() =>
+                                    handleActionClick(action, item)
+                                  }
+                                  disabled={isDisabled}
+                                  className={
+                                    action.variant === "destructive"
+                                      ? "text-destructive focus:text-destructive"
+                                      : ""
+                                  }
+                                >
+                                  {action.icon && (
+                                    <action.icon className="mr-2 h-4 w-4" />
+                                  )}
+                                  {action.label}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
 
@@ -482,7 +656,8 @@ function DataTableComponent<T extends { id: string | number }>({
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Showing {page * pageSize + 1} to{" "}
-              {Math.min((page + 1) * pageSize, totalItems)} of {totalItems} results
+              {Math.min((page + 1) * pageSize, totalItems)} of {totalItems}{" "}
+              results
             </p>
 
             {/* Pagination */}
@@ -508,7 +683,11 @@ function DataTableComponent<T extends { id: string | number }>({
           open={!!deleteItem}
           onOpenChange={() => setDeleteItem(null)}
           title="Are you sure?"
-          description={`${deleteAction.label} "${(deleteItem as any).name || (deleteItem as any).title || `item ${deleteItem.id}`}". This action cannot be undone.`}
+          description={`${deleteAction.label} "${
+            (deleteItem as any).name ||
+            (deleteItem as any).title ||
+            `item ${deleteItem.id}`
+          }". This action cannot be undone.`}
           confirmText={deleteAction.label}
           onConfirm={handleDeleteConfirm}
           variant="danger"
@@ -518,7 +697,8 @@ function DataTableComponent<T extends { id: string | number }>({
   );
 }
 
-export const DataTable = memo(DataTableComponent) as <T extends { id: string | number }>(
+export const DataTable = memo(DataTableComponent) as <
+  T extends { id: string | number }
+>(
   props: DataTableProps<T>
 ) => JSX.Element;
-

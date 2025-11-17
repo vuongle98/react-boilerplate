@@ -1,11 +1,13 @@
-import { Outlet, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
-import NotFound from "@/shared/components/navigation/NotFound";
 import { AuthenticatedLayout } from "@/layouts/AuthenticatedLayout";
 import { PublicLayout } from "@/layouts/PublicLayout";
+import { ServiceManagementPage } from "@/pages";
 import { BotsPage } from "@/pages/BotsPage";
 import { ComponentsDemo } from "@/pages/ComponentsDemo";
 import { HomePage } from "@/pages/HomePage";
+import { DashboardPage } from "@/shared/components/generic-dashboard";
+import NotFound from "@/shared/components/navigation/NotFound";
+import { Outlet, Route, Routes } from "react-router-dom";
 
 /**
  * AppRouter defines all application routes
@@ -38,6 +40,10 @@ export function AppRouter() {
         <Route path="/" element={<HomePage />} />
         <Route path="/bots" element={<BotsPage />} />
         <Route path="/components" element={<ComponentsDemo />} />
+
+        {/* Admin Dashboard Routes */}
+        <Route path="/admin" element={<ServiceManagementPage />} />
+        <Route path="/admin/:serviceCode" element={<DashboardPage />} />
       </Route>
 
       {/* 404 Not Found */}
@@ -45,4 +51,3 @@ export function AppRouter() {
     </Routes>
   );
 }
-

@@ -75,6 +75,9 @@ export interface FilterOption<T = any> extends Omit<BaseFilterOption, "value"> {
   // value: T;
   disabled?: boolean;
   description?: string;
+  type?: 'text' | 'select' | 'date' | 'searchableSelect';
+  placeholder?: string;
+  options?: Option<T>[];
 }
 
 export interface FilterGroup {

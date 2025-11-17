@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 8080,
     proxy: {
-      "/api/core": {
+      "/api": {
         target: "http://localhost:8082", // The backend API URL
         changeOrigin: true, // Ensures the origin is changed to the target
       },

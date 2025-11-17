@@ -16,6 +16,10 @@ interface CTASectionProps {
     text: string;
     to: string;
   };
+  tertiaryButton?: {
+    text: string;
+    to: string;
+  };
   background?: "primary" | "gradient";
   className?: string;
 }
@@ -25,6 +29,7 @@ export const CTASection: React.FC<CTASectionProps> = ({
   subtitle,
   primaryButton,
   secondaryButton,
+  tertiaryButton,
   background = "primary",
   className = ""
 }) => {
@@ -73,6 +78,22 @@ export const CTASection: React.FC<CTASectionProps> = ({
                 >
                   <Link to={secondaryButton.to}>
                     {secondaryButton.text}
+                  </Link>
+                </Button>
+              )}
+              {tertiaryButton && (
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className={`px-8 py-4 text-lg font-semibold ${
+                    background === "primary"
+                      ? "text-primary-foreground hover:bg-white/10"
+                      : "text-white hover:bg-white/10"
+                  }`}
+                  asChild
+                >
+                  <Link to={tertiaryButton.to}>
+                    {tertiaryButton.text}
                   </Link>
                 </Button>
               )}

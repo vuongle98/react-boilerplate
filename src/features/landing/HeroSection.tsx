@@ -18,6 +18,10 @@ interface HeroSectionProps {
     text: string;
     to: string;
   };
+  tertiaryButton?: {
+    text: string;
+    to: string;
+  };
   stats?: Array<{
     value: string;
     label: string;
@@ -31,6 +35,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   subtitle,
   primaryButton,
   secondaryButton,
+  tertiaryButton,
   stats
 }) => {
   return (
@@ -70,6 +75,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   {secondaryButton.text}
                 </Link>
               </Button>
+              {tertiaryButton && (
+                <Button size="lg" variant="outline" className="px-8 py-4 text-lg font-semibold" asChild>
+                  <Link to={tertiaryButton.to}>
+                    {tertiaryButton.text}
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </FadeUp>

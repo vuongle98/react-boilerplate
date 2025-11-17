@@ -143,6 +143,7 @@ const TableCell = React.forwardRef<
     ref={ref}
     className={cn(
       "px-4 py-3 align-middle text-neutral-900 dark:text-neutral-100 [&:has([role=checkbox])]:pr-0",
+      "whitespace-normal break-words",
       className
     )}
     {...props}

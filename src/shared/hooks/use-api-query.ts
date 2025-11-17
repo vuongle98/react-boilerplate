@@ -52,11 +52,13 @@ export function useApiQuery<T>({
   cacheTime = 300000, // 5 minutes
   staleTime = 10000, // 10 seconds
 }: UseApiQueryProps<T>) {
-  const storageKey = persistKey || `filters-${endpoint?.replace(/\//g, "-") || "default"}`;
+  const storageKey =
+    persistKey || `filters-${endpoint?.replace(/\//g, "-") || "default"}`;
   const [filtersState, setFiltersState] =
     useState<ApiQueryFilters>(initialFilters);
   const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
+  const [forceRefreshFlag, setForceRefreshFlag] = useState(false);
   const queryClient = useQueryClient();
 
   // Prevents multiple refetches
@@ -87,14 +89,18 @@ export function useApiQuery<T>({
   // Update persisted filters when filters change
   const setFilters = useCallback(
     (newFilters: ApiQueryFilters) => {
-      setFiltersState(newFilters);
-      if (persistFilters) {
-        setPersistedFilters(newFilters);
+      // Only update and reset page if filters actually changed
+      const filtersChanged = JSON.stringify(newFilters) !== JSON.stringify(filtersState);
+      if (filtersChanged) {
+        setFiltersState(newFilters);
+        if (persistFilters) {
+          setPersistedFilters(newFilters);
+        }
+        // Reset to first page when filters actually change
+        setPage(0);
       }
-      // Reset to first page when filters change
-      setPage(0);
     },
-    [persistFilters, setPersistedFilters]
+    [persistFilters, setPersistedFilters, filtersState]
   );
 
   // Helper to set search term
@@ -168,7 +174,7 @@ export function useApiQuery<T>({
 
   // API query with pagination and filters
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: stableQueryKey,
+    queryKey: [...stableQueryKey, forceRefreshFlag], // Include forceRefreshFlag in query key to force refetch
     queryFn: async () => {
       try {
         const params = buildQueryParams(debouncedFilters);
@@ -179,7 +185,7 @@ export function useApiQuery<T>({
             params,
             undefined,
             useCache,
-            !useCache // forceRefresh when cache is disabled
+            forceRefreshFlag // Use the forceRefreshFlag
           );
           return response;
         } else {
@@ -190,7 +196,7 @@ export function useApiQuery<T>({
             undefined,
             "json",
             useCache,
-            !useCache // forceRefresh when cache is disabled
+            forceRefreshFlag // Use the forceRefreshFlag
           );
           // Convert to paginated format for consistency
           return {
@@ -208,9 +214,14 @@ export function useApiQuery<T>({
           return mockData;
         }
         throw err;
+      } finally {
+        // Reset the flag after use
+        if (forceRefreshFlag) {
+          setForceRefreshFlag(false);
+        }
       }
     },
-    enabled: useCache,
+    enabled: !!endpoint,
     gcTime: useCache ? cacheTime : 0,
     staleTime: useCache ? staleTime : 0,
     meta: {
@@ -222,10 +233,14 @@ export function useApiQuery<T>({
   const refetchRef = useRef(refetch);
   refetchRef.current = refetch;
 
-  // Reset to first page when filters change
+  // Track previous filters to avoid unnecessary page resets
+  const prevNormalizedFilters = useRef(normalizedFilters);
+
+  // Reset to first page when filters actually change
   useEffect(() => {
-    if (!isInitialMount.current) {
+    if (!isInitialMount.current && prevNormalizedFilters.current !== normalizedFilters) {
       setPage(0);
+      prevNormalizedFilters.current = normalizedFilters;
     }
   }, [normalizedFilters]);
 
@@ -244,15 +259,17 @@ export function useApiQuery<T>({
     return refetch();
   }, [refetch, queryClient, queryKey, useCache]);
 
-  // Force refresh function that removes cache and refetches
+  // Force refresh function that removes cache and forces fresh API call
   const forceRefresh = useCallback(async () => {
     if (useCache) {
       // Remove all cached data for this query
       queryClient.removeQueries({ queryKey: [...queryKey] });
+      // Also clear BaseApiService cache for this endpoint
+      EnhancedApiService.clearCache(endpoint);
     }
-    // Force a new fetch
-    return refetch();
-  }, [refetch, queryClient, queryKey, useCache]);
+    // Set flag to force refresh on next query
+    setForceRefreshFlag(true);
+  }, [queryClient, queryKey, useCache, endpoint]);
 
   return {
     data: data?.content || [],

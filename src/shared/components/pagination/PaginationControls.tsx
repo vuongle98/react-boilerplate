@@ -1,3 +1,6 @@
+import { useIsMobile } from "@/shared/hooks/use-mobile";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -6,11 +9,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { ChevronFirst, ChevronLast, MoreHorizontal } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { useState } from "react";
 
 interface PaginationControlsProps {
@@ -97,7 +103,9 @@ export function PaginationControls({
         <Button
           variant="ghost"
           size="icon"
-          className={`hover:bg-primary/5 transition-colors ${isMobile ? 'h-10 w-10' : 'h-9 w-9'}`}
+          className={`hover:bg-primary/5 transition-colors ${
+            isMobile ? "h-10 w-10" : "h-9 w-9"
+          }`}
           onClick={(e) => handlePageChange(page - 1)}
           disabled={page === 0}
           aria-label="Previous page"
@@ -156,7 +164,9 @@ export function PaginationControls({
         <Button
           variant="ghost"
           size="icon"
-          className={`hover:bg-primary/5 transition-colors ${isMobile ? 'h-10 w-10' : 'h-9 w-9'}`}
+          className={`hover:bg-primary/5 transition-colors ${
+            isMobile ? "h-10 w-10" : "h-9 w-9"
+          }`}
           onClick={(e) => handlePageChange(page + 1)}
           disabled={page >= totalPages - 1}
           aria-label="Next page"
@@ -203,7 +213,10 @@ export function PaginationControls({
         {showPageSizeSelector && onPageSizeChange && (
           <div className="flex items-center gap-2 w-full justify-center">
             <span className="text-sm text-muted-foreground">Show:</span>
-            <Select value={pageSize.toString()} onValueChange={(value) => onPageSizeChange(Number(value))}>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(value) => onPageSizeChange(Number(value))}
+            >
               <SelectTrigger className="w-24 h-10 border-muted-foreground/20 hover:border-primary focus:border-primary transition-colors">
                 <SelectValue />
               </SelectTrigger>
@@ -242,7 +255,10 @@ export function PaginationControls({
         {showPageSizeSelector && onPageSizeChange && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Rows:</span>
-            <Select value={pageSize.toString()} onValueChange={(value) => onPageSizeChange(Number(value))}>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(value) => onPageSizeChange(Number(value))}
+            >
               <SelectTrigger className="w-20 h-8 border-muted-foreground/20 hover:border-primary focus:border-primary transition-colors">
                 <SelectValue />
               </SelectTrigger>
@@ -273,7 +289,7 @@ export function PaginationControls({
             type="number"
             value={jumpToPage}
             onChange={(e) => setJumpToPage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleJumpToPage()}
+            onKeyDown={(e) => e.key === "Enter" && handleJumpToPage()}
             placeholder={`${page + 1}`}
             className="w-16 h-8 text-center border-muted-foreground/20 focus:border-primary transition-colors"
             min={1}
@@ -284,7 +300,11 @@ export function PaginationControls({
             size="sm"
             className="h-8 px-3 border-muted-foreground/20 hover:border-primary hover:bg-primary/5 transition-colors"
             onClick={handleJumpToPage}
-            disabled={!jumpToPage || parseInt(jumpToPage, 10) < 1 || parseInt(jumpToPage, 10) > totalPages}
+            disabled={
+              !jumpToPage ||
+              parseInt(jumpToPage, 10) < 1 ||
+              parseInt(jumpToPage, 10) > totalPages
+            }
           >
             Go
           </Button>

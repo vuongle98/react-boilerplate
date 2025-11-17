@@ -15,30 +15,30 @@ All colors MUST be HSL.
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    
+
     /* Theme-aware colors */
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 217 100% 75%;
-    
+
     --secondary: 262 80% 50%;
     --secondary-foreground: 0 0% 100%;
-    
+
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    
+
     --warning: 25 95% 53%;
     --warning-foreground: 0 0% 100%;
-    
+
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    
+
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
-    
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 217 91% 60%;
@@ -46,10 +46,26 @@ All colors MUST be HSL.
     --radius: 0.375rem;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(262 90% 65%));
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 80% 60%));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--primary-glow))
+    );
+    --gradient-secondary: linear-gradient(
+      135deg,
+      hsl(var(--secondary)),
+      hsl(262 90% 65%)
+    );
+    --gradient-success: linear-gradient(
+      135deg,
+      hsl(var(--success)),
+      hsl(142 80% 60%)
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary))
+    );
 
     /* Shadows */
     --shadow-primary: 0 10px 30px -10px hsl(var(--primary) / 0.3);
@@ -113,10 +129,26 @@ All colors MUST be HSL.
     --ring: 217 100% 75%;
 
     /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(262 100% 75%));
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 90% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--primary-glow))
+    );
+    --gradient-secondary: linear-gradient(
+      135deg,
+      hsl(var(--secondary)),
+      hsl(262 100% 75%)
+    );
+    --gradient-success: linear-gradient(
+      135deg,
+      hsl(var(--success)),
+      hsl(142 90% 70%)
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary))
+    );
 
     /* Enhanced shadows for dark mode */
     --shadow-primary: 0 10px 30px -10px hsl(var(--primary) / 0.5);
@@ -241,7 +273,7 @@ All colors MUST be HSL.
 }
 
 /* Import theme variables after base definitions so they take precedence */
-@import './styles/themes.css';
+@import "./styles/themes.css";
 
 @layer base {
   * {
@@ -251,4 +283,263 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom scrollbar styling for the entire application */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+  border: none;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+.dark * {
+  scrollbar-color: hsl(var(--muted-foreground) / 0.4) transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
+}
+
+/* High contrast mode for accessibility */
+.high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 85%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 0%;
+  --border: 0 0% 50%;
+  --input: 0 0% 50%;
+  --ring: 0 0% 100%;
+  --radius: 0.375rem;
+}
+
+.high-contrast * {
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Glass effect styles - More visible, exclude interactive elements */
+.glass-effect [data-glass="true"],
+.glass-effect .glass-surface,
+.glass-effect [class*="bg-card"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect [class*="bg-popover"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect [class*="bg-background"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect [class*="bg-white"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect [class*="bg-neutral-900"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect [role="dialog"],
+.glass-effect [role="tooltip"],
+.glass-effect [role="menu"],
+.glass-effect [role="listbox"],
+.glass-effect [data-radix-select-content],
+.glass-effect [data-radix-popover-content],
+.glass-effect [data-radix-dropdown-menu-content],
+.glass-effect [data-radix-tooltip-content] {
+  backdrop-filter: blur(16px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(200%) !important;
+  background: hsl(var(--card) / 0.9) !important;
+  border-color: hsl(var(--border) / 0.8) !important;
+  box-shadow: 0 12px 40px 0 hsl(var(--foreground) / 0.15) !important;
+}
+
+/* Glass effect for dark mode */
+.glass-effect.dark [data-glass="true"],
+.glass-effect.dark .glass-surface,
+.glass-effect.dark [class*="bg-card"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect.dark [class*="bg-popover"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect.dark [class*="bg-background"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect.dark [class*="bg-white"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect.dark [class*="bg-neutral-900"]:not(button):not(textarea):not(select):not([role="button"]):not([role="checkbox"]):not([role="radio"]):not([role="tab"]),
+.glass-effect.dark [role="dialog"],
+.glass-effect.dark [role="tooltip"],
+.glass-effect.dark [role="menu"],
+.glass-effect.dark [role="listbox"],
+.glass-effect.dark [data-radix-select-content],
+.glass-effect.dark [data-radix-popover-content],
+.glass-effect.dark [data-radix-dropdown-menu-content],
+.glass-effect.dark [data-radix-tooltip-content] {
+  backdrop-filter: blur(16px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(200%) !important;
+  background: hsl(var(--card) / 0.6) !important;
+  border-color: hsl(var(--border) / 0.6) !important;
+  box-shadow: 0 12px 40px 0 hsl(0 0% 0% / 0.4) !important;
+}
+
+/* Enhanced glass effect for modal-like components */
+.glass-effect .popover,
+.glass-effect [role="dialog"],
+.glass-effect .modal-content,
+.glass-effect .drawer-content,
+.glass-effect .sheet-content {
+  backdrop-filter: blur(20px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
+  background: hsl(var(--popover) / 0.85) !important;
+}
+
+.glass-effect.dark .popover,
+.glass-effect.dark [role="dialog"],
+.glass-effect.dark .modal-content,
+.glass-effect.dark .drawer-content,
+.glass-effect.dark .sheet-content {
+  background: hsl(var(--popover) / 0.5) !important;
+}
+
+/* Glass effect for buttons and interactive elements - only when explicitly marked */
+.glass-effect button[data-glass="true"],
+.glass-effect [role="button"][data-glass="true"],
+.glass-effect [role="tab"] {
+  backdrop-filter: blur(10px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(160%) !important;
+}
+
+/* Buttons with background colors get enhanced styling only if they have data-glass */
+.glass-effect button[class*="bg-"][data-glass="true"],
+.glass-effect [role="button"][class*="bg-"][data-glass="true"] {
+  backdrop-filter: blur(10px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(160%) !important;
+}
+
+/* Primary buttons with glass effect */
+.glass-effect button[class*="bg-primary"][data-glass="true"],
+.glass-effect [role="button"][class*="bg-primary"][data-glass="true"] {
+  background: hsl(var(--primary) / 0.9) !important;
+  border-color: hsl(var(--primary) / 0.8) !important;
+  box-shadow: 0 6px 20px 0 hsl(var(--primary) / 0.2) !important;
+}
+
+/* Secondary buttons with glass effect */
+.glass-effect button[class*="bg-secondary"][data-glass="true"],
+.glass-effect [role="button"][class*="bg-secondary"][data-glass="true"] {
+  background: hsl(var(--secondary) / 0.9) !important;
+  border-color: hsl(var(--secondary) / 0.8) !important;
+  box-shadow: 0 6px 20px 0 hsl(var(--secondary) / 0.2) !important;
+}
+
+/* Outline buttons with glass effect */
+.glass-effect button[class*="bg-transparent"][data-glass="true"],
+.glass-effect [role="button"][class*="bg-transparent"][data-glass="true"] {
+  background: hsl(var(--background) / 0.8) !important;
+  border-color: hsl(var(--primary) / 0.9) !important;
+  box-shadow: 0 6px 20px 0 hsl(var(--primary) / 0.1) !important;
+}
+
+/* Dark mode button glass effects */
+.glass-effect.dark button[class*="bg-"][data-glass="true"],
+.glass-effect.dark [role="button"][class*="bg-"][data-glass="true"] {
+  backdrop-filter: blur(10px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(160%) !important;
+}
+
+/* Dark mode primary buttons with glass effect */
+.glass-effect.dark button[class*="bg-primary"][data-glass="true"],
+.glass-effect.dark [role="button"][class*="bg-primary"][data-glass="true"] {
+  background: hsl(var(--primary) / 0.7) !important;
+  border-color: hsl(var(--primary) / 0.6) !important;
+  box-shadow: 0 6px 20px 0 hsl(var(--primary) / 0.3) !important;
+}
+
+/* Dark mode secondary buttons with glass effect */
+.glass-effect.dark button[class*="bg-secondary"][data-glass="true"],
+.glass-effect.dark [role="button"][class*="bg-secondary"][data-glass="true"] {
+  background: hsl(var(--secondary) / 0.7) !important;
+  border-color: hsl(var(--secondary) / 0.6) !important;
+  box-shadow: 0 6px 20px 0 hsl(var(--secondary) / 0.3) !important;
+}
+
+/* Dark mode outline buttons with glass effect */
+.glass-effect.dark button[class*="bg-transparent"][data-glass="true"],
+.glass-effect.dark [role="button"][class*="bg-transparent"][data-glass="true"] {
+  background: hsl(var(--background) / 0.6) !important;
+  border-color: hsl(var(--primary) / 0.7) !important;
+  box-shadow: 0 6px 20px 0 hsl(var(--primary) / 0.2) !important;
+}
+
+/* Ensure active states preserve button variant colors */
+.glass-effect button[data-glass="true"]:active,
+.glass-effect [role="button"][data-glass="true"]:active,
+.glass-effect [role="tab"]:active {
+  /* Let the button variants handle their own active backgrounds */
+  /* Just ensure the glass effect blur and transform work together */
+  backdrop-filter: blur(12px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  transform: scale(0.98) !important;
+}
+
+/* Primary buttons active state */
+.glass-effect button[class*="bg-primary"][data-glass="true"]:active,
+.glass-effect [role="button"][class*="bg-primary"][data-glass="true"]:active {
+  background: hsl(var(--primary) / 0.85) !important;
+  box-shadow: 0 4px 16px 0 hsl(var(--primary) / 0.3) !important;
+}
+
+/* Secondary buttons active state */
+.glass-effect button[class*="bg-secondary"][data-glass="true"]:active,
+.glass-effect [role="button"][class*="bg-secondary"][data-glass="true"]:active {
+  background: hsl(var(--secondary) / 0.85) !important;
+  box-shadow: 0 4px 16px 0 hsl(var(--secondary) / 0.3) !important;
+}
+
+/* Dark mode active states */
+.glass-effect.dark button[class*="bg-primary"][data-glass="true"]:active,
+.glass-effect.dark [role="button"][class*="bg-primary"][data-glass="true"]:active {
+  background: hsl(var(--primary) / 0.7) !important;
+  box-shadow: 0 4px 16px 0 hsl(var(--primary) / 0.4) !important;
+}
+
+.glass-effect.dark button[class*="bg-secondary"][data-glass="true"]:active,
+.glass-effect.dark [role="button"][class*="bg-secondary"][data-glass="true"]:active {
+  background: hsl(var(--secondary) / 0.7) !important;
+  box-shadow: 0 4px 16px 0 hsl(var(--secondary) / 0.4) !important;
+}
+
+/* Glass effect for tabs */
+.glass-effect [role="tablist"],
+.glass-effect .tabs-list {
+  backdrop-filter: blur(6px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(140%) !important;
+}
+
+/* Glass effect for input elements - subtle to preserve readability */
+.glass-effect input[class*="bg-"],
+.glass-effect input[data-glass="true"] {
+  backdrop-filter: blur(8px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
+}
+
+/* Dark mode input glass effects */
+.glass-effect.dark input[class*="bg-"],
+.glass-effect.dark input[data-glass="true"] {
+  backdrop-filter: blur(8px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
 }

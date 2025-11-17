@@ -1,4 +1,4 @@
-import { PaginatedData, PaginationOptions } from "@/types/common";
+import { PaginatedData, PaginationOptions } from "@/shared/types/common";
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import LoggingService from "./LoggingService";
 import TokenService from "./TokenService";
@@ -14,6 +14,8 @@ class BaseApiService {
   private static apiCache = new Map<string, CacheEntry>();
   private static urlToCacheKeys = new Map<string, Set<string>>(); // Maps base URLs to their cache keys
   private static cacheTTL = 60000; // 1 minute cache TTL by default
+  private static invalidatedUrls = new Set<string>(); // Track recently invalidated URLs
+  private static invalidationTimestamp = 0; // Timestamp of last invalidation
 
   /**
    * Initialize the API service
@@ -58,6 +60,7 @@ class BaseApiService {
           } else {
             config.headers.Authorization = "";
           }
+
           return config;
         },
         (error) => {
@@ -186,19 +189,49 @@ class BaseApiService {
 
   /**
    * Invalidate related caches for a resource URL
+   * Clears caches for the exact URL, collection URL, and all related query variations
    */
   private static invalidateRelatedCaches(url: string): void {
-    // Clear exact URL
-    const exactUrl = this.generateCacheKey(url, undefined, undefined, false);
-    this.clearCache(exactUrl, true);
+    const baseUrl = this.generateCacheKey(url, undefined, undefined, false);
+    const collectionUrl = baseUrl.split("/").slice(0, -1).join("/");
+
+    // Track invalidated URLs to force browser cache bypass
+    this.invalidatedUrls.add(baseUrl);
+    if (collectionUrl !== baseUrl) {
+      this.invalidatedUrls.add(collectionUrl);
+    }
+    this.invalidationTimestamp = Date.now();
+
+    // Clear all cache entries that start with this base URL
+    // This includes entries with different query keys and parameters
+    for (const cacheKey of this.apiCache.keys()) {
+      if (cacheKey.includes(baseUrl)) {
+        this.apiCache.delete(cacheKey);
+      }
+    }
+
+    // Also clear from the URL to cache keys mapping
+    this.urlToCacheKeys.delete(baseUrl);
 
     // For RESTful endpoints, also clear the collection cache
-    // e.g., for /api/notes/123, clear /api/notes
-    const urlParts = exactUrl.split("/");
+    // e.g., for /api/notes/123, clear /api/notes and all its variations
+    const urlParts = baseUrl.split("/");
     if (urlParts.length > 2) {
-      const collectionUrl = urlParts.slice(0, -1).join("/");
-      this.clearCache(collectionUrl);
+      // Clear all collection-related caches
+      for (const cacheKey of this.apiCache.keys()) {
+        if (cacheKey.includes(collectionUrl)) {
+          this.apiCache.delete(cacheKey);
+        }
+      }
+
+      this.urlToCacheKeys.delete(collectionUrl);
     }
+
+    LoggingService.info(
+      "api",
+      "cache_invalidated",
+      `Invalidated caches for ${url}`
+    );
   }
 
   /**
@@ -220,7 +253,7 @@ class BaseApiService {
     try {
       const cacheKey = this.generateCacheKey(url, params, queryKey);
 
-      // Check cache first if caching is enabled
+      // Check cache first if caching is enabled and not forcing refresh
       if (useCache && !forceRefresh && responseType === "json") {
         const cachedItem = this.apiCache.get(cacheKey);
         if (cachedItem && this.isCacheValid(cacheKey)) {
@@ -229,9 +262,41 @@ class BaseApiService {
         }
       }
 
+      // Check if this URL was recently invalidated (within last 5 seconds)
+      const baseUrl = this.generateCacheKey(url, undefined, undefined, false);
+      const wasRecentlyInvalidated =
+        this.invalidatedUrls.has(baseUrl) &&
+        Date.now() - this.invalidationTimestamp < 5000;
+
+      // Prepare request parameters and headers
+      let requestParams = params;
+      const requestHeaders = { ...headers };
+
+      // Set cache control headers based on caching preference or recent invalidation
+      if (!useCache || forceRefresh || wasRecentlyInvalidated) {
+        // For non-cached requests, forced refresh, or recently invalidated URLs, prevent browser caching
+        requestHeaders["Cache-Control"] = "no-cache";
+        requestHeaders["Pragma"] = "no-cache";
+        // Add timestamp to bust any remaining cache
+        requestParams = {
+          ...params,
+          _t: Date.now(), // Cache busting parameter
+        };
+
+        // Clear from invalidated URLs set after using it
+        if (wasRecentlyInvalidated) {
+          this.invalidatedUrls.delete(baseUrl);
+        }
+      } else {
+        // For cached requests, allow browser caching with short TTL
+        requestHeaders["Cache-Control"] = `max-age=${Math.floor(
+          this.cacheTTL / 1000
+        )}`;
+      }
+
       const response = await this.instance.get<T>(url, {
-        params,
-        headers,
+        params: requestParams,
+        headers: requestHeaders,
         responseType,
       });
 
@@ -239,7 +304,7 @@ class BaseApiService {
         return response.data as unknown as T;
       }
 
-      // Store in cache if it's a JSON response
+      // Store in cache if it's a JSON response and caching is enabled
       if (useCache && responseType === "json") {
         const cacheEntry: CacheEntry = {
           data: response.data,
@@ -269,7 +334,17 @@ class BaseApiService {
     LoggingService.info("api", "post", `POST ${url}`);
 
     try {
-      const response = await this.instance.post<T>(url, data, config);
+      // Prepare config with cache control for mutations
+      const requestConfig = {
+        ...config,
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          ...config?.headers,
+        },
+      };
+
+      const response = await this.instance.post<T>(url, data, requestConfig);
 
       // Invalidate related caches
       this.invalidateRelatedCaches(url);
@@ -293,8 +368,15 @@ class BaseApiService {
     LoggingService.info("api", "put", `PUT ${url}`);
 
     try {
+      // Prepare headers with cache control for mutations
+      const requestHeaders = {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        ...headers,
+      };
+
       const response = await this.instance.put<T>(url, data, {
-        headers,
+        headers: requestHeaders,
       });
 
       // Invalidate related caches
@@ -319,7 +401,17 @@ class BaseApiService {
     LoggingService.info("api", "patch", `PATCH ${url}`);
 
     try {
-      const response = await this.instance.patch<T>(url, data, config);
+      // Prepare config with cache control for mutations
+      const requestConfig = {
+        ...config,
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          ...config?.headers,
+        },
+      };
+
+      const response = await this.instance.patch<T>(url, data, requestConfig);
 
       // Invalidate related caches
       this.invalidateRelatedCaches(url);
@@ -342,8 +434,15 @@ class BaseApiService {
     LoggingService.info("api", "delete", `DELETE ${url}`);
 
     try {
+      // Prepare headers with cache control for mutations
+      const requestHeaders = {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        ...headers,
+      };
+
       const response = await this.instance.delete<T>(url, {
-        headers,
+        headers: requestHeaders,
       });
 
       // Invalidate related caches
