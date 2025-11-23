@@ -321,7 +321,7 @@ export const ServiceConfigForm = forwardRef<
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="code"
@@ -434,7 +434,7 @@ export const ServiceConfigForm = forwardRef<
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="api.endpoints.list"
@@ -470,7 +470,7 @@ export const ServiceConfigForm = forwardRef<
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="api.endpoints.update"
@@ -517,19 +517,9 @@ export const ServiceConfigForm = forwardRef<
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-lg font-semibold">Service Fields</h3>
-              <Button
-                type="button"
-                onClick={addField}
-                size="sm"
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Field
-              </Button>
             </div>
-
             {(() => {
               const fieldsValue = form.watch("fields");
               const safeFields = Array.isArray(fieldsValue) ? fieldsValue : [];
@@ -552,7 +542,7 @@ export const ServiceConfigForm = forwardRef<
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField
                         control={form.control}
                         name={`fields.${index}.key`}
@@ -646,7 +636,7 @@ export const ServiceConfigForm = forwardRef<
                       <h4 className="text-sm font-medium mb-3">
                         Table Configuration
                       </h4>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name={`fields.${index}.table.visible`}
@@ -741,7 +731,7 @@ export const ServiceConfigForm = forwardRef<
                                       value ? Number(value) : undefined
                                     );
                                   }}
-                                  className="w-32"
+                                  className="w-full sm:w-32"
                                 />
                               </FormControl>
                               <FormDescription className="text-xs">
@@ -756,6 +746,17 @@ export const ServiceConfigForm = forwardRef<
                 </Card>
               ));
             })()}
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={addField}
+                size="sm"
+                className="gap-2"
+                iconLeft={<Plus className="h-4 w-4" />}
+              >
+                Add Field
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -768,7 +769,7 @@ export const ServiceConfigForm = forwardRef<
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">CRUD Operations</h3>
                 {[
@@ -827,17 +828,22 @@ export const ServiceConfigForm = forwardRef<
 
         {/* Navigation Buttons */}
         {showActions && (
-          <div className="flex items-center justify-between pt-6 border-t">
+          <div className="flex flex-col gap-3 pt-6 border-t sm:flex-row sm:justify-between">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
 
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               {isSubmitting
                 ? "Saving..."
                 : initialData

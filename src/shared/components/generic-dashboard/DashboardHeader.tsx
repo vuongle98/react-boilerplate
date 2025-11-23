@@ -1,6 +1,6 @@
+import { SlideUp } from "@/shared/ui/animate";
 import { Button } from "@/shared/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
-import { SlideUp } from "@/shared/ui/animate";
 
 interface DashboardHeaderProps {
   displayName: string;
@@ -21,7 +21,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   return (
     <SlideUp delay={100}>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             {displayName}
@@ -29,14 +29,12 @@ export function DashboardHeader({
           <p className="text-muted-foreground mt-1">{description}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto">
           <Button
             variant="outline"
             onClick={onRefresh}
             disabled={isLoading}
-            iconLeft={
-              <RefreshCw className={isLoading ? "animate-spin" : ""} />
-            }
+            iconLeft={<RefreshCw className={isLoading ? "animate-spin" : ""} />}
           >
             Refresh
           </Button>

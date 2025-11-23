@@ -1,3 +1,4 @@
+import { LoadingSpinner } from "@/shared/components/loading";
 import {
   useCreateMutation,
   useUpdateMutation,
@@ -12,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import { AdminDataFilters } from "./AdminDataFilters";
 import { AdminEmptyState } from "./AdminEmptyState";
 import { AdminErrorState } from "./AdminErrorState";
-import { AdminLoadingState } from "./AdminLoadingState";
 import { AdminModals } from "./AdminModals";
 import { AdminPageHeader } from "./AdminPageHeader";
 import { AdminPagination } from "./AdminPagination";
@@ -219,7 +219,7 @@ export function AdminServicePage() {
         {isError && <AdminErrorState error={error} onRetry={refresh} />}
 
         {/* Loading State */}
-        {isLoading && <AdminLoadingState />}
+        {isLoading && <LoadingSpinner size="lg" text="Loading services..." />}
 
         {/* Services Grid */}
         {!isLoading && !isError && (

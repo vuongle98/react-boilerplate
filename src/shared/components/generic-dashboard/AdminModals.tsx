@@ -48,6 +48,7 @@ export function AdminModals({
         onClose={onCloseCreateModal}
         title="Create New Service"
         size="xl"
+        showCloseButton={false}
         footerContent={
           <>
             <Button variant="outline" onClick={onCloseCreateModal}>
@@ -80,6 +81,7 @@ export function AdminModals({
         }}
         title="Edit Service"
         size="md"
+        showCloseButton={false}
         footerContent={
           <>
             <Button

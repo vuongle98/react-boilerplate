@@ -1,10 +1,5 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect } from "react";
+import { useSettingsStore } from "@/shared/stores/settings-store";
 
 // Theme mode controls light/dark/system
 export type ThemeMode = "light" | "dark" | "system";
@@ -93,49 +88,17 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   defaultTheme = "system",
   defaultAccent = "default",
 }) => {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") return defaultTheme;
-    const savedMode =
-      (localStorage.getItem("utilz-theme-mode") as ThemeMode | null) ||
-      (localStorage.getItem("utilz-theme") as ThemeMode | null) || // backward compat
-      defaultTheme;
-    return savedMode;
-  });
-
-  const [accent, setAccentState] = useState<AccentName>(() => {
-    if (typeof window === "undefined") return defaultAccent;
-    const savedAccent = localStorage.getItem(
-      "utilz-theme-accent"
-    ) as AccentName | null;
-    // Migrate older single-theme values (e.g., 'blue')
-    const legacy = localStorage.getItem("utilz-theme") as string | null;
-    const legacyAccent =
-      legacy && ["blue", "green", "purple", "pink", "orange"].includes(legacy)
-        ? (legacy as AccentName)
-        : null;
-    return savedAccent || legacyAccent || defaultAccent;
-  });
-
-  const [isCompact, setCompactState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const savedCompact = localStorage.getItem("utilz-theme-compact");
-    return savedCompact === "true";
-  });
-
-  const [glassEffect, setGlassEffectState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const savedGlass = localStorage.getItem("utilz-theme-glass");
-    return savedGlass === "true";
-  });
+  const settings = useSettingsStore();
 
   const accentConfig =
-    availableAccents.find((a) => a.name === accent) || availableAccents[0];
+    availableAccents.find((a) => a.name === settings.accent) || availableAccents[0];
+
   const prefersDark =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const isDarkMode = theme === "system" ? prefersDark : theme === "dark";
+  const isDarkMode = settings.theme === "system" ? prefersDark : settings.theme === "dark";
 
-  const applyTheme = useCallback(
+  const applyTheme = React.useCallback(
     (newMode: ThemeMode, newAccent: AccentName, newCompact: boolean, newGlassEffect: boolean) => {
       if (typeof document === "undefined") return;
 
@@ -175,80 +138,53 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       }
 
       root.setAttribute("data-theme", modeClass);
-
-      // Persist to localStorage
-      try {
-        localStorage.setItem("utilz-theme-mode", newMode);
-        localStorage.setItem("utilz-theme-accent", newAccent);
-        localStorage.setItem("utilz-theme-compact", newCompact.toString());
-        localStorage.setItem("utilz-theme-glass", newGlassEffect.toString());
-      } catch (error) {
-        console.warn("Failed to save theme to localStorage:", error);
-      }
     },
     []
   );
 
-  // Apply theme on mount and when theme changes
+  // Apply theme on mount and when settings change
   useEffect(() => {
-    applyTheme(theme, accent, isCompact, glassEffect);
-  }, [theme, accent, isCompact, glassEffect, applyTheme]);
+    applyTheme(settings.theme, settings.accent, settings.isCompact, settings.glassEffect);
+  }, [settings.theme, settings.accent, settings.isCompact, settings.glassEffect, applyTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
-    if (theme !== "system") return;
+    if (settings.theme !== "system") return;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => applyTheme("system", accent, isCompact, glassEffect);
+    const handleChange = () => applyTheme("system", settings.accent, settings.isCompact, settings.glassEffect);
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, accent, isCompact, glassEffect, applyTheme]);
+  }, [settings.theme, settings.accent, settings.isCompact, settings.glassEffect, applyTheme]);
 
-  const setTheme = (newTheme: ThemeMode) => {
-    setThemeState(newTheme);
-  };
-
-  const setAccent = (newAccent: AccentName) => {
-    setAccentState(newAccent);
-  };
-
-  const setCompact = (compact: boolean) => {
-    setCompactState(compact);
-  };
-
-  const setGlassEffect = (glass: boolean) => {
-    setGlassEffectState(glass);
+  const toggleTheme = () => {
+    const themes: ThemeMode[] = ["light", "dark", "system"];
+    const currentIndex = themes.indexOf(settings.theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    settings.setTheme(themes[nextIndex]);
   };
 
   const toggleCompact = () => {
-    setCompact(!isCompact);
+    settings.setCompact(!settings.isCompact);
   };
 
   const toggleGlassEffect = () => {
-    setGlassEffect(!glassEffect);
-  };
-
-  const toggleTheme = () => {
-    setThemeState((prev) => {
-      const currentIndex = availableThemes.findIndex((t) => t.name === prev);
-      const nextIndex = (currentIndex + 1) % availableThemes.length;
-      return availableThemes[nextIndex].name as ThemeMode;
-    });
+    settings.setGlassEffect(!settings.glassEffect);
   };
 
   const value: ThemeContextType = {
-    theme,
-    setTheme,
+    theme: settings.theme,
+    setTheme: settings.setTheme,
     toggleTheme,
     isDarkMode,
-    accent,
+    accent: settings.accent,
     accentConfig,
     availableAccents,
-    setAccent,
-    isCompact,
-    setCompact,
+    setAccent: settings.setAccent,
+    isCompact: settings.isCompact,
+    setCompact: settings.setCompact,
     toggleCompact,
-    glassEffect,
-    setGlassEffect,
+    glassEffect: settings.glassEffect,
+    setGlassEffect: settings.setGlassEffect,
     toggleGlassEffect,
   };
 
@@ -256,4 +192,3 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 };
-

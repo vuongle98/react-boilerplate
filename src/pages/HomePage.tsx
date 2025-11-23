@@ -19,7 +19,6 @@ import {
 import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import {
   BarChart3,
-  Bot,
   CheckCircle,
   Code,
   Database,
@@ -37,13 +36,6 @@ import { Link } from "react-router-dom";
 
 export const HomePage = () => {
   const features = [
-    {
-      icon: <Bot className="h-6 w-6" />,
-      title: "Bot Management",
-      description:
-        "Complete CRUD operations with advanced filtering, pagination, and real-time updates",
-      color: "text-blue-500",
-    },
     {
       icon: <Database className="h-6 w-6" />,
       title: "Smart Caching",
@@ -147,16 +139,12 @@ export const HomePage = () => {
         title="Build Better React Applications"
         subtitle="A feature-rich, production-ready React boilerplate with modern tooling, comprehensive component library, and best practices built-in."
         primaryButton={{
-          text: "View Demo",
-          to: "/bots",
+          text: "Admin Dashboard",
+          to: "/admin",
         }}
         secondaryButton={{
           text: "Explore Components",
           to: "/components",
-        }}
-        tertiaryButton={{
-          text: "Admin Panel",
-          to: "/admin",
         }}
         stats={stats}
       />
@@ -313,22 +301,18 @@ export const HomePage = () => {
         title="Ready to Build Something Amazing?"
         subtitle="Start with our production-ready boilerplate and focus on what matters most - your application logic."
         primaryButton={{
-          text: "Explore Live Demo",
-          to: "/bots",
+          text: "Get Started",
+          to: "/admin",
         }}
         secondaryButton={{
           text: "View Components",
           to: "/components",
         }}
-        tertiaryButton={{
-          text: "Admin Panel",
-          to: "/admin",
-        }}
         background="gradient"
       />
 
       {/* Footer */}
-      <footer className="py-12 bg-neutral-900 text-neutral-300">
+      <footer className="py-12 bg-neutral-900 text-neutral-300 p-4">
         <div className="page-container">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
@@ -354,14 +338,6 @@ export const HomePage = () => {
                 </li>
                 <li>
                   <Link
-                    to="/bots"
-                    className="hover:text-white transition-colors"
-                  >
-                    Bots Demo
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     to="/components"
                     className="hover:text-white transition-colors"
                   >
@@ -374,6 +350,14 @@ export const HomePage = () => {
                     className="hover:text-white transition-colors"
                   >
                     Admin Panel
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/docs"
+                    className="hover:text-white transition-colors"
+                  >
+                    Documentation
                   </Link>
                 </li>
               </ul>

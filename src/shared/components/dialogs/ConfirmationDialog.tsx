@@ -1,4 +1,4 @@
-import React from "react";
+import { useTheme } from "@/app/providers/ThemeProvider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
-import { useTheme } from "@/app/providers/ThemeProvider";
+import React from "react";
 
 /**
  * ConfirmationDialog - A reusable confirmation dialog component with consistent styling

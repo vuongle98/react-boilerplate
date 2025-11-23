@@ -2,7 +2,6 @@ import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { AuthenticatedLayout } from "@/layouts/AuthenticatedLayout";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { ServiceManagementPage } from "@/pages";
-import { BotsPage } from "@/pages/BotsPage";
 import { ComponentsDemo } from "@/pages/ComponentsDemo";
 import { HomePage } from "@/pages/HomePage";
 import { DashboardPage } from "@/shared/components/generic-dashboard";
@@ -38,7 +37,6 @@ export function AppRouter() {
         }
       >
         <Route path="/" element={<HomePage />} />
-        <Route path="/bots" element={<BotsPage />} />
         <Route path="/components" element={<ComponentsDemo />} />
 
         {/* Admin Dashboard Routes */}

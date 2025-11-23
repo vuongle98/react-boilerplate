@@ -39,71 +39,66 @@ export function ServiceManagementPage() {
           </p>
         </div>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          {/* Stats Cards */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Services
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metricsLoading ? "..." : metrics?.totalServices ?? 0}
+        {/* Stats Cards - Compact Layout */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {/* Total Services */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Services
+                </p>
+                <p className="text-2xl font-bold">
+                  {metricsLoading ? "..." : metrics?.totalServices ?? 0}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                +2 from last month
-              </p>
-            </CardContent>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Endpoints
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metricsLoading ? "..." : metrics?.activeEndpoints ?? 0}
+          {/* Active Endpoints */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Active Endpoints
+                </p>
+                <p className="text-2xl font-bold">
+                  {metricsLoading ? "..." : metrics?.activeEndpoints ?? 0}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">All healthy</p>
-            </CardContent>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                API Calls Today
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metricsLoading
-                  ? "..."
-                  : (metrics?.apiCallsToday ?? 0).toLocaleString()}
+          {/* API Calls Today */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  API Calls Today
+                </p>
+                <p className="text-2xl font-bold">
+                  {metricsLoading
+                    ? "..."
+                    : (metrics?.apiCallsToday ?? 0).toLocaleString()}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                +12% from yesterday
-              </p>
-            </CardContent>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Avg Response Time
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metricsLoading
-                  ? "..."
-                  : `${Math.round(metrics?.averageResponseTimeMs ?? 0)}ms`}
+          {/* Avg Response Time */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Avg Response Time
+                </p>
+                <p className="text-2xl font-bold">
+                  {metricsLoading
+                    ? "..."
+                    : `${Math.round(metrics?.averageResponseTimeMs ?? 0)}ms`}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">Within SLA</p>
-            </CardContent>
+            </div>
           </Card>
         </div>
 

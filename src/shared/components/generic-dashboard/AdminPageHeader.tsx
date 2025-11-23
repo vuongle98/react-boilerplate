@@ -1,6 +1,6 @@
-import { Button } from "@/shared/ui/button";
 import { SlideUp } from "@/shared/ui/animate";
-import { RefreshCw, Plus } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Plus, RefreshCw } from "lucide-react";
 
 interface AdminPageHeaderProps {
   isLoading: boolean;
@@ -17,29 +17,34 @@ export function AdminPageHeader({
 }: AdminPageHeaderProps) {
   return (
     <SlideUp delay={50}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-2 justify-end">
           <Button
             variant="outline"
             onClick={onRefresh}
             disabled={isLoading}
-            className="gap-2"
+            className="gap-2 flex-1 sm:flex-none"
             iconLeft={<RefreshCw />}
           >
-            Refresh Services
+            <span className="hidden sm:inline">Refresh Services</span>
+            <span className="sm:hidden">Refresh</span>
           </Button>
 
-          {servicesCount > 0 && (
-            <span className="text-sm text-muted-foreground">
-              Loaded {servicesCount} service
-              {servicesCount !== 1 ? "s" : ""} from API
-            </span>
-          )}
+          <Button
+            onClick={onCreate}
+            className="gap-2 flex-1 sm:flex-none"
+            iconLeft={<Plus />}
+          >
+            Create Service
+          </Button>
         </div>
 
-        <Button onClick={onCreate} className="gap-2" iconLeft={<Plus />}>
-          Create Service
-        </Button>
+        {servicesCount > 0 && (
+          <span className="text-sm text-muted-foreground text-center text-right">
+            Loaded {servicesCount} service
+            {servicesCount !== 1 ? "s" : ""} from API
+          </span>
+        )}
       </div>
     </SlideUp>
   );

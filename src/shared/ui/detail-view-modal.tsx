@@ -97,7 +97,7 @@ export function DetailViewModal({
           <div className="space-y-4">{children}</div>
         </div>
         {footerContent && (
-          <div className="p-4 sm:p-4 border-t flex flex-col sm:flex-row sm:justify-end gap-2 bg-muted/20">
+          <div className="p-4 sm:p-4 border-t flex justify-end gap-2 bg-muted/20">
             {footerContent}
           </div>
         )}

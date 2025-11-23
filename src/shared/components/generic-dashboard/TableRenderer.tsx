@@ -411,7 +411,7 @@ export function TableRenderer({
         columns={columns}
         actions={actions}
         isLoading={loading}
-        loadingMode="skeleton"
+        loadingMode="overlay"
         emptyState={{
           title: "No data found",
           description: "There are no items to display at the moment.",

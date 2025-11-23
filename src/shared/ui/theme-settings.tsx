@@ -1,4 +1,5 @@
 import { AccentName, useTheme } from "@/app/providers/ThemeProvider";
+import { useSettingsStore } from "@/shared/stores/settings-store";
 import {
   Accessibility,
   Bell,
@@ -63,39 +64,9 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
     setGlassEffect,
   } = useTheme();
 
-  const [isOpen, setIsOpen] = React.useState(false);
+  const settings = useSettingsStore();
 
-  // Additional settings state
-  const [reducedMotion, setReducedMotion] = React.useState(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("reduced-motion") === "true"
-      : false
-  );
-  const [highContrast, setHighContrast] = React.useState(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("high-contrast") === "true"
-      : false
-  );
-  const [fontSize, setFontSize] = React.useState(() =>
-    typeof window !== "undefined"
-      ? parseFloat(localStorage.getItem("font-size") || "1")
-      : 1
-  );
-  const [toastPosition, setToastPosition] = React.useState(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("toast-position") || "bottom-right"
-      : "bottom-right"
-  );
-  const [toastDuration, setToastDuration] = React.useState(() =>
-    typeof window !== "undefined"
-      ? parseInt(localStorage.getItem("toast-duration") || "4000")
-      : 4000
-  );
-  const [soundEnabled, setSoundEnabled] = React.useState(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("sound-enabled") !== "false"
-      : true
-  );
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const getAccentColor = (accentName: AccentName): string => {
     const colorMap: Record<AccentName, string> = {
@@ -129,62 +100,8 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
     setGlassEffect(checked);
   };
 
-  const handleReducedMotionChange = (checked: boolean) => {
-    setReducedMotion(checked);
-    localStorage.setItem("reduced-motion", checked.toString());
-    document.documentElement.style.setProperty(
-      "--animation-duration",
-      checked ? "0s" : "0.3s"
-    );
-  };
-
-  const handleHighContrastChange = (checked: boolean) => {
-    setHighContrast(checked);
-    localStorage.setItem("high-contrast", checked.toString());
-    document.documentElement.classList.toggle("high-contrast", checked);
-  };
-
-  const handleFontSizeChange = (value: number[]) => {
-    const newSize = value[0];
-    setFontSize(newSize);
-    localStorage.setItem("font-size", newSize.toString());
-    document.documentElement.style.setProperty(
-      "--font-size-multiplier",
-      newSize.toString()
-    );
-    document.documentElement.style.fontSize = `${newSize * 100}%`;
-  };
-
-  const handleToastPositionChange = (value: string) => {
-    setToastPosition(value);
-    localStorage.setItem("toast-position", value);
-  };
-
-  const handleToastDurationChange = (value: number[]) => {
-    const newDuration = value[0];
-    setToastDuration(newDuration);
-    localStorage.setItem("toast-duration", newDuration.toString());
-  };
-
-  const handleSoundEnabledChange = (checked: boolean) => {
-    setSoundEnabled(checked);
-    localStorage.setItem("sound-enabled", checked.toString());
-  };
-
   const exportSettings = () => {
-    const settings = {
-      theme,
-      accent,
-      isCompact,
-      glassEffect,
-      reducedMotion,
-      highContrast,
-      fontSize,
-      toastPosition,
-      toastDuration,
-      soundEnabled,
-    };
-    const dataStr = JSON.stringify(settings, null, 2);
+    const dataStr = settings.exportSettings();
     const dataUri =
       "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
 
@@ -207,27 +124,8 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const settings = JSON.parse(e.target?.result as string);
-
-        // Apply imported settings
-        if (settings.theme) setTheme(settings.theme);
-        if (settings.accent) setAccent(settings.accent);
-        if (typeof settings.isCompact === "boolean")
-          setCompact(settings.isCompact);
-        if (typeof settings.glassEffect === "boolean")
-          setGlassEffect(settings.glassEffect);
-        if (typeof settings.reducedMotion === "boolean")
-          handleReducedMotionChange(settings.reducedMotion);
-        if (typeof settings.highContrast === "boolean")
-          handleHighContrastChange(settings.highContrast);
-        if (settings.fontSize) handleFontSizeChange([settings.fontSize]);
-        if (settings.toastPosition)
-          handleToastPositionChange(settings.toastPosition);
-        if (settings.toastDuration)
-          handleToastDurationChange([settings.toastDuration]);
-        if (typeof settings.soundEnabled === "boolean")
-          handleSoundEnabledChange(settings.soundEnabled);
-
+        const importedSettings = JSON.parse(e.target?.result as string);
+        settings.importSettings(importedSettings);
         toast.success("Settings imported successfully!");
       } catch (error) {
         toast.error("Failed to import settings. Invalid file format.");
@@ -238,17 +136,7 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
   };
 
   const resetToDefaults = () => {
-    setTheme("system");
-    setAccent("default");
-    setCompact(false);
-    setGlassEffect(false);
-    handleReducedMotionChange(false);
-    handleHighContrastChange(false);
-    handleFontSizeChange([1]);
-    handleToastPositionChange("bottom-right");
-    handleToastDurationChange([4000]);
-    handleSoundEnabledChange(true);
-
+    settings.resetToDefaults();
     toast.success("Settings reset to defaults!");
   };
 
@@ -553,8 +441,8 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                     </p>
                   </div>
                   <Switch
-                    checked={reducedMotion}
-                    onCheckedChange={handleReducedMotionChange}
+                    checked={settings.reducedMotion}
+                    onCheckedChange={settings.setReducedMotion}
                   />
                 </div>
 
@@ -569,8 +457,8 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                     </p>
                   </div>
                   <Switch
-                    checked={highContrast}
-                    onCheckedChange={handleHighContrastChange}
+                    checked={settings.highContrast}
+                    onCheckedChange={settings.setHighContrast}
                   />
                 </div>
 
@@ -582,11 +470,11 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                     </Label>
                     <p className="text-xs text-muted-foreground">
                       Adjust text size for better readability (Current:{" "}
-                      {Math.round(fontSize * 100)}%)
+                      {Math.round(settings.fontSize * 100)}%)
                     </p>
                     <Slider
-                      value={[fontSize]}
-                      onValueChange={handleFontSizeChange}
+                      value={[settings.fontSize]}
+                      onValueChange={(value) => settings.setFontSize(value[0])}
                       min={0.8}
                       max={1.4}
                       step={0.1}
@@ -624,8 +512,8 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                       Choose where notifications appear on screen
                     </p>
                     <Select
-                      value={toastPosition}
-                      onValueChange={handleToastPositionChange}
+                      value={settings.toastPosition}
+                      onValueChange={settings.setToastPosition}
                     >
                       <SelectTrigger
                         data-glass={glassEffect ? "true" : undefined}
@@ -657,11 +545,14 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                       Toast Duration
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      How long notifications stay visible ({toastDuration}ms)
+                      How long notifications stay visible (
+                      {settings.toastDuration}ms)
                     </p>
                     <Slider
-                      value={[toastDuration]}
-                      onValueChange={handleToastDurationChange}
+                      value={[settings.toastDuration]}
+                      onValueChange={(value) =>
+                        settings.setToastDuration(value[0])
+                      }
                       min={2000}
                       max={10000}
                       step={500}
@@ -678,7 +569,7 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-1">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      {soundEnabled ? (
+                      {settings.soundEnabled ? (
                         <Volume2 className="h-4 w-4" />
                       ) : (
                         <VolumeX className="h-4 w-4" />
@@ -690,8 +581,8 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                     </p>
                   </div>
                   <Switch
-                    checked={soundEnabled}
-                    onCheckedChange={handleSoundEnabledChange}
+                    checked={settings.soundEnabled}
+                    onCheckedChange={settings.setSoundEnabled}
                   />
                 </div>
               </div>
@@ -846,25 +737,25 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({ trigger }) => {
                   Spacious
                 </Badge>
               )}
-              {reducedMotion && (
+              {settings.reducedMotion && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
                   Reduced Motion
                 </Badge>
               )}
-              {highContrast && (
+              {settings.highContrast && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
                   High Contrast
                 </Badge>
               )}
-              {fontSize !== 1 && (
+              {settings.fontSize !== 1 && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Type className="h-3 w-3" />
-                  {Math.round(fontSize * 100)}% Font
+                  {Math.round(settings.fontSize * 100)}% Font
                 </Badge>
               )}
-              {!soundEnabled && (
+              {!settings.soundEnabled && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <VolumeX className="h-3 w-3" />
                   Muted

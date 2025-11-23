@@ -1,6 +1,12 @@
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Bounce } from "@/shared/ui/animate";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+import React from "react";
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -17,13 +23,17 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
   description,
   color = "text-primary",
   delay = 200,
-  className = ""
+  className = "",
 }) => {
   return (
     <Bounce delay={delay}>
-      <Card className={`h-full group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-neutral-800 hover:-translate-y-1 ${className}`}>
+      <Card
+        className={`h-full group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-neutral-800 hover:-translate-y-1 ${className}`}
+      >
         <CardHeader className="pb-4">
-          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ${color}`}>
+          <div
+            className={`w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ${color}`}
+          >
             {icon}
           </div>
           <CardTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-primary transition-colors">
