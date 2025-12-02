@@ -103,9 +103,8 @@ export function PaginationControls({
         <Button
           variant="ghost"
           size="icon"
-          className={`hover:bg-primary/5 transition-colors ${
-            isMobile ? "h-10 w-10" : "h-9 w-9"
-          }`}
+          className={`hover:bg-primary/5 transition-colors ${isMobile ? "h-10 w-10" : "h-9 w-9"
+            }`}
           onClick={(e) => handlePageChange(page - 1)}
           disabled={page === 0}
           aria-label="Previous page"
@@ -164,9 +163,8 @@ export function PaginationControls({
         <Button
           variant="ghost"
           size="icon"
-          className={`hover:bg-primary/5 transition-colors ${
-            isMobile ? "h-10 w-10" : "h-9 w-9"
-          }`}
+          className={`hover:bg-primary/5 transition-colors ${isMobile ? "h-10 w-10" : "h-9 w-9"
+            }`}
           onClick={(e) => handlePageChange(page + 1)}
           disabled={page >= totalPages - 1}
           aria-label="Next page"

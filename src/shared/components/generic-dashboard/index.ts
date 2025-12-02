@@ -43,9 +43,9 @@ export { ItemDetailView } from "./ItemDetailView";
 export { ServiceError } from "./ServiceError";
 
 // Export form components
+export { FieldRenderer } from "./FieldRenderer";
 export { FormActions } from "./FormActions";
 export { FormField } from "./FormField";
-export { FieldRenderer } from "./FieldRenderer";
 export { FormRenderer } from "./FormRenderer";
 
 // Export service

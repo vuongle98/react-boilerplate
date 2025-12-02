@@ -53,9 +53,7 @@ export const FormRenderer = React.forwardRef<
   // Get visible form fields, sorted by order
   const formFields = useMemo(
     () =>
-      fields
-        .filter((field) => field.form?.visible !== false)
-        .sort((a, b) => (a.form?.order || 0) - (b.form?.order || 0)),
+      [...fields].sort((a, b) => (a.form?.order || 0) - (b.form?.order || 0)),
     [fields]
   );
 
@@ -124,17 +122,19 @@ export const FormRenderer = React.forwardRef<
   };
 
   // Render field using the FieldRenderer component
-  const renderField = (field: FieldDefinition, isFirstField: boolean) => (
-    <FieldRenderer
-      field={field}
-      value={formData[field.key]}
-      error={validationErrors[field.key]}
-      loading={loading}
-      onChange={handleFieldChange}
-      isFirstField={isFirstField}
-      inputRef={isFirstField ? firstInputRef : undefined}
-    />
-  );
+  const renderField = (field: FieldDefinition, isFirstField: boolean) => {
+    return (
+      <FieldRenderer
+        field={field}
+        value={formData[field.key]}
+        error={validationErrors[field.key]}
+        loading={loading}
+        onChange={handleFieldChange}
+        isFirstField={isFirstField}
+        inputRef={isFirstField ? firstInputRef : undefined}
+      />
+    );
+  };
 
   return (
     <form ref={ref} onSubmit={handleSubmit} className="space-y-6">

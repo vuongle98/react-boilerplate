@@ -6,7 +6,7 @@ import { SearchableSelectRootProps } from "../types";
 import { useSearchableSelect } from "../hooks/use-searchable-select";
 
 const SearchableSelectContext = React.createContext<{
-  hook: ReturnType<typeof useSearchableSelect>; 
+  hook: ReturnType<typeof useSearchableSelect>;
   config: any;
 } | null>(null);
 
@@ -50,7 +50,7 @@ export const SearchableSelectRoot = React.memo(function SearchableSelectRoot<T>(
       <div className={cn("space-y-2", config.ui.className)}>
         <Select
           value={config.behavior.multiple ? undefined : (Array.isArray(value) && value[0]?.value) || ""}
-          onValueChange={() => {}}
+          onValueChange={() => { }}
           disabled={config.ui.disabled}
           open={state.isOpen}
           onOpenChange={actions.setIsOpen}
@@ -66,17 +66,6 @@ export const SearchableSelectRoot = React.memo(function SearchableSelectRoot<T>(
   const valueChanged = JSON.stringify(prevProps.value) !== JSON.stringify(nextProps.value);
   const configChanged = prevProps.config !== nextProps.config;
   const onChangeChanged = prevProps.onChange !== nextProps.onChange;
-
-  // Log when props actually change
-  if (valueChanged || configChanged || onChangeChanged) {
-    console.log('🔄 SearchableSelectRoot props changed:', {
-      valueChanged,
-      configChanged,
-      onChangeChanged,
-      configType: nextProps.config?.dataSource?.type,
-      valueCount: Array.isArray(nextProps.value) ? nextProps.value.length : 0
-    });
-  }
 
   return !valueChanged && !configChanged && !onChangeChanged;
 }) as <T>(props: SearchableSelectRootProps<T>) => JSX.Element;

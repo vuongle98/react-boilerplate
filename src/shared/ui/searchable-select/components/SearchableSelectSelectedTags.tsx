@@ -25,16 +25,16 @@ const Tag = React.memo(function Tag({
 
   return (
     <div
-      className="flex items-center gap-1 px-2 py-1 rounded bg-primary/10 text-xs"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 text-sm font-medium border border-primary/20 hover:bg-primary/15 transition-colors"
     >
       <span>{option.label}</span>
       <button
         type="button"
         onClick={handleRemove}
-        className="ml-1 hover:text-destructive transition-colors"
+        className="ml-0.5 hover:text-destructive transition-colors rounded-sm hover:bg-destructive/10 p-0.5"
         aria-label={`Remove ${option.label}`}
       >
-        <X className="h-3 w-3" />
+        <X className="h-3.5 w-3.5" />
       </button>
     </div>
   );
@@ -71,7 +71,7 @@ export const SearchableSelectSelectedTags = React.memo(function SearchableSelect
   // Stable action references
   const removeTagRef = useRef(actions.removeSelectedTag);
   const clearAllRef = useRef(actions.handleClearAll);
-  
+
   removeTagRef.current = actions.removeSelectedTag;
   clearAllRef.current = actions.handleClearAll;
 

@@ -33,6 +33,7 @@ import {
   Search,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import useDebounce from "@/shared/hooks/use-debounce";
@@ -151,19 +152,34 @@ const MultipleSelectDemo = React.memo(() => {
     []
   );
 
+  const handleRemoveMultipleItem = useCallback((valueToRemove: string) => {
+    setMultipleSelectValue((prev) => {
+      if (!prev) return prev;
+      return prev.filter((item) => item.value !== valueToRemove);
+    });
+  }, []);
+
   const multipleSelectBadges = useMemo(() => {
     if (!multipleSelectValue || multipleSelectValue.length === 0) return null;
 
     return (
       <div className="flex flex-wrap gap-2">
         {multipleSelectValue.map((item) => (
-          <Badge key={item.value} variant="secondary">
+          <Badge key={item.value} variant="secondary" className="gap-1 pr-1">
             {item.label}
+            <button
+              type="button"
+              onClick={() => handleRemoveMultipleItem(item.value)}
+              className="ml-1 hover:text-destructive transition-colors"
+              aria-label={`Remove ${item.label}`}
+            >
+              <X className="h-3 w-3" />
+            </button>
           </Badge>
         ))}
       </div>
     );
-  }, [multipleSelectValue]);
+  }, [multipleSelectValue, handleRemoveMultipleItem]);
 
 
   return (
@@ -221,19 +237,34 @@ const SearchableSelectDemo = React.memo(() => {
     []
   );
 
+  const handleRemoveSearchableItem = useCallback((valueToRemove: string) => {
+    setSearchableSelectValue((prev) => {
+      if (!prev) return prev;
+      return prev.filter((item) => item.value !== valueToRemove);
+    });
+  }, []);
+
   const searchableSelectBadges = useMemo(() => {
     if (!searchableSelectValue || searchableSelectValue.length === 0) return null;
 
     return (
       <div className="flex flex-wrap gap-2">
         {searchableSelectValue.map((item) => (
-          <Badge key={item.value} variant="outline">
+          <Badge key={item.value} variant="outline" className="gap-1 pr-1">
             {item.label}
+            <button
+              type="button"
+              onClick={() => handleRemoveSearchableItem(item.value)}
+              className="ml-1 hover:text-destructive transition-colors"
+              aria-label={`Remove ${item.label}`}
+            >
+              <X className="h-3 w-3" />
+            </button>
           </Badge>
         ))}
       </div>
     );
-  }, [searchableSelectValue]);
+  }, [searchableSelectValue, handleRemoveSearchableItem]);
 
   return (
     <div className="space-y-4">
@@ -345,8 +376,8 @@ export const TablesSection: React.FC = React.memo(() => {
           value === "Active"
             ? "success"
             : value === "Inactive"
-            ? "secondary"
-            : "warning"
+              ? "secondary"
+              : "warning"
         }
       >
         {value}
@@ -604,8 +635,21 @@ export const TablesSection: React.FC = React.memo(() => {
                 {apiSelectValue && apiSelectValue.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {apiSelectValue.map((item) => (
-                      <Badge key={item.value} variant="outline">
+                      <Badge key={item.value} variant="outline" className="gap-1 pr-1">
                         {item.label}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setApiSelectValue((prev) => {
+                              if (!prev) return prev;
+                              return prev.filter((i) => i.value !== item.value);
+                            });
+                          }}
+                          className="ml-1 hover:text-destructive transition-colors"
+                          aria-label={`Remove ${item.label}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
                       </Badge>
                     ))}
                   </div>

@@ -98,6 +98,11 @@ export interface DataTableProps<T> {
   onSelectAll?: (checked: boolean) => void;
   onSelectItem?: (item: T, checked: boolean) => void;
   onClearSelection?: () => void;
+
+  // Sorting
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  onSortChange?: (key: string, order: "asc" | "desc") => void;
 }
 
 function DataTableComponent<T extends { id: string | number }>({
@@ -137,6 +142,9 @@ function DataTableComponent<T extends { id: string | number }>({
   onSelectAll,
   onSelectItem,
   onClearSelection,
+  sortBy,
+  sortOrder,
+  onSortChange,
 }: DataTableProps<T>) {
   const [deleteItem, setDeleteItem] = useState<T | null>(null);
   const [deleteAction, setDeleteAction] = useState<Action<T> | null>(null);
@@ -562,15 +570,36 @@ function DataTableComponent<T extends { id: string | number }>({
         <Table style={{ tableLayout: "fixed" }}>
           <TableHeader>
             <TableRow>
-              {columns.map((column) => (
-                <TableHead
-                  key={String(column.key)}
-                  className={column.className}
-                  style={column.style}
-                >
-                  {column.label}
-                </TableHead>
-              ))}
+              {columns.map((column) => {
+                const colKey = String(column.key);
+                const isSortable = !!column.sortable && !!onSortChange;
+                const isActive = isSortable && sortBy === colKey;
+                const nextOrder = isActive && sortOrder === "asc" ? "desc" : "asc";
+
+                return (
+                  <TableHead
+                    key={colKey}
+                    className={column.className}
+                    style={column.style}
+                    aria-sort={isActive ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
+                  >
+                    {isSortable ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 select-none"
+                        onClick={() => onSortChange?.(colKey, nextOrder)}
+                      >
+                        <span>{column.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {isActive ? (sortOrder === "asc" ? "▲" : "▼") : "↕"}
+                        </span>
+                      </button>
+                    ) : (
+                      column.label
+                    )}
+                  </TableHead>
+                );
+              })}
               {actions.length > 0 && (
                 <TableHead className="w-[70px]"></TableHead>
               )}

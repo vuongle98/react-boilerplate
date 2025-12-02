@@ -73,9 +73,5 @@ export const SearchableSelectTrigger = React.memo(function SearchableSelectTrigg
     prevProps.placeholder === nextProps.placeholder
   );
 
-  if (!shouldNotRerender) {
-    console.log('🔄 SearchableSelectTrigger props changed, re-rendering');
-  }
-
   return shouldNotRerender;
 }) as <T>(props: SearchableSelectTriggerProps<T>) => JSX.Element;

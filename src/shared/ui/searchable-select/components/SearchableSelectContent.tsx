@@ -74,14 +74,6 @@ const OptionItem = React.memo(function OptionItem<T>({
     prevProps.showCheckboxes === nextProps.showCheckboxes
   );
 
-  if (!shouldNotRerender) {
-    console.log('🔄 OptionItem props changed, re-rendering:', {
-      optionValue: nextProps.option.value,
-      isSelectedChanged: prevProps.isSelected !== nextProps.isSelected,
-      showCheckboxesChanged: prevProps.showCheckboxes !== nextProps.showCheckboxes
-    });
-  }
-
   return shouldNotRerender;
 });
 
@@ -141,7 +133,7 @@ export const SearchableSelectContent = React.memo(function SearchableSelectConte
   const loadMoreRef = useRef(actions.loadMore);
   const setSearchRef = useRef(actions.setSearch);
   const setPageRef = useRef(actions.setPage);
-  
+
   loadMoreRef.current = actions.loadMore;
   setSearchRef.current = actions.setSearch;
   setPageRef.current = actions.setPage;

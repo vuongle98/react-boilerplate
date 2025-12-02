@@ -102,6 +102,12 @@ export function TableRenderer({
     [fields]
   );
 
+  // Determine search availability based on fields' searchable flag
+  const hasSearchable = useMemo(
+    () => tableFields.some((field) => field.table?.searchable === true),
+    [tableFields]
+  );
+
   // Selection handlers
   const handleSelectAll = useCallback(
     (checked: boolean) => {
@@ -164,6 +170,7 @@ export function TableRenderer({
     const fieldColumns = tableFields.map((field) => ({
       key: field.key,
       label: field.label,
+      sortable: field.table?.sortable === true,
       style: field.table?.width
         ? {
             width: `${field.table.width}px`,
@@ -178,6 +185,7 @@ export function TableRenderer({
       fieldColumns.unshift({
         key: "selection",
         label: "",
+        sortable: false,
         style: { width: "40px", minWidth: "40px" },
         render: (_, item) => (
           <div className="flex items-center justify-center">
@@ -231,16 +239,7 @@ export function TableRenderer({
   // Create filter options from fields that should be filterable
   const filterOptions: FilterOption<GenericDataItem>[] = useMemo(() => {
     return tableFields
-      .filter((field) => {
-        // Exclude fields that are explicitly not filterable
-        if (field.table?.filterable === false) return false;
-
-        // Include fields that are explicitly filterable
-        if (field.table?.filterable === true) return true;
-
-        // Include all other table fields by default (they should be filterable)
-        return true;
-      })
+      .filter((field) => field.table?.filterable === true)
       .map((field) => ({
         id: field.key,
         label: field.label,
@@ -283,6 +282,18 @@ export function TableRenderer({
       onFiltersChange(otherFilters);
     },
     [onFiltersChange, onSearchChange, searchTerm]
+  );
+
+  // Sorting
+  const sortBy = (filters?.sortBy as string) || undefined;
+  const sortOrder = (filters?.sortOrder as "asc" | "desc") || undefined;
+
+  const handleSortChange = useCallback(
+    (key: string, order: "asc" | "desc") => {
+      const updated = { ...filters, sortBy: key, sortOrder: order };
+      onFiltersChange(updated);
+    },
+    [filters, onFiltersChange]
   );
 
   // Handle filter reset
@@ -399,7 +410,7 @@ export function TableRenderer({
         options={filterOptions}
         onChange={handleFilterChange}
         onReset={handleFilterReset}
-        withSearch={true}
+        withSearch={hasSearchable}
         searchPlaceholder="Search..."
         filtersTitle="Advanced Filters"
         showToggle={false}
@@ -433,6 +444,9 @@ export function TableRenderer({
         onSelectAll={handleSelectAll}
         onSelectItem={handleSelectItem}
         onClearSelection={() => setSelectedItems(new Set())}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
       />
     </div>
   );

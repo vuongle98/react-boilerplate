@@ -7,30 +7,86 @@ import { SlideUp } from "@/shared/ui/animate";
 import { Section } from "@/features/landing";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion";
-import { Settings, Info } from "lucide-react";
+import { Settings, Info, User, Lock, Bell } from "lucide-react";
 
 export const TabsSection: React.FC = () => {
   return (
     <Section background="neutral">
       <SlideUp delay={700}>
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Tabs */}
+          {/* Tabs - Responsive (icons only on small screens) */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                Tabs
+                Tabs (Responsive)
               </CardTitle>
               <CardDescription>
-                Tabbed interface for organizing content into separate sections
+                Icons only on small screens, full labels on larger screens
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="account" className="w-full">
                 <TabsList className="w-full">
-                  <TabsTrigger value="account">Account</TabsTrigger>
-                  <TabsTrigger value="password">Password</TabsTrigger>
-                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                  <TabsTrigger value="account" icon={<User className="w-4 h-4" />}>
+                    Account
+                  </TabsTrigger>
+                  <TabsTrigger value="password" icon={<Lock className="w-4 h-4" />}>
+                    Password
+                  </TabsTrigger>
+                  <TabsTrigger value="notifications" icon={<Bell className="w-4 h-4" />}>
+                    Notifications
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="account" className="space-y-4">
+                  <Input label="Full Name" placeholder="John Doe" />
+                  <Input label="Email" type="email" placeholder="john@example.com" />
+                  <Button>Update Account</Button>
+                </TabsContent>
+                <TabsContent value="password" className="space-y-4">
+                  <Input label="Current Password" type="password" />
+                  <Input label="New Password" type="password" />
+                  <Input label="Confirm Password" type="password" />
+                  <Button>Change Password</Button>
+                </TabsContent>
+                <TabsContent value="notifications" className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Email notifications</label>
+                    <Switch />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Push notifications</label>
+                    <Switch defaultChecked />
+                  </div>
+                  <Button>Save Preferences</Button>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Tabs - Icon Only Mode */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Tabs (Icon Only)
+              </CardTitle>
+              <CardDescription>
+                Compact mode showing only icons for space efficiency
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="account" className="w-full">
+                <TabsList className="w-full" iconOnly>
+                  <TabsTrigger value="account" icon={<User className="w-4 h-4" />}>
+                    Account
+                  </TabsTrigger>
+                  <TabsTrigger value="password" icon={<Lock className="w-4 h-4" />}>
+                    Password
+                  </TabsTrigger>
+                  <TabsTrigger value="notifications" icon={<Bell className="w-4 h-4" />}>
+                    Notifications
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="account" className="space-y-4">
                   <Input label="Full Name" placeholder="John Doe" />

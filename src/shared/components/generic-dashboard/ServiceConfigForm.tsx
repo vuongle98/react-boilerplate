@@ -71,6 +71,12 @@ const serviceConfigSchema = z.object({
             width: z.number().optional(),
           })
           .optional(),
+        form: z
+          .object({
+            visible: z.boolean().optional(),
+            order: z.number().optional(),
+          })
+          .optional(),
       })
     )
     .min(1, "At least one field is required"),
@@ -112,20 +118,19 @@ export const ServiceConfigForm = forwardRef<
 ) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Validate initial data
-  if (initialData && initialData.fields && !Array.isArray(initialData.fields)) {
-    console.error("initialData.fields is not an array:", initialData.fields);
-    toast.error("Invalid service configuration: fields must be an array");
-    // Return a fallback UI instead of crashing
-    return (
-      <div className="p-4 border border-destructive/50 rounded-lg bg-destructive/5">
-        <h3 className="text-lg font-semibold text-destructive mb-2">
-          Configuration Error
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          The service configuration data is invalid. Fields must be an array.
-        </p>
-      </div>
+  // Validate initial data: log and toast, but continue with safe defaults
+  if (
+    initialData &&
+    initialData.fields &&
+    !Array.isArray(initialData.fields) &&
+    typeof initialData.fields !== "string"
+  ) {
+    console.error(
+      "initialData.fields is not an array or JSON string:",
+      initialData.fields
+    );
+    toast.error(
+      "Invalid service configuration: fields must be an array or JSON string"
     );
   }
 
@@ -179,6 +184,10 @@ export const ServiceConfigForm = forwardRef<
                   filterable: field.table?.filterable ?? false,
                   width: field.table?.width,
                 },
+                form: {
+                  visible: field.form?.visible ?? true,
+                  order: field.form?.order,
+                },
               }));
             } catch (e) {
               console.warn("Failed to parse fields JSON:", e);
@@ -194,6 +203,9 @@ export const ServiceConfigForm = forwardRef<
                     sortable: false,
                     searchable: false,
                     filterable: false,
+                  },
+                  form: {
+                    visible: true,
                   },
                 },
               ];
@@ -214,6 +226,10 @@ export const ServiceConfigForm = forwardRef<
                 searchable: field.table?.searchable ?? false,
                 filterable: field.table?.filterable ?? false,
                 width: field.table?.width,
+              },
+              form: {
+                visible: field.form?.visible ?? true,
+                order: field.form?.order,
               },
             }));
           } else {
@@ -236,6 +252,9 @@ export const ServiceConfigForm = forwardRef<
                   searchable: false,
                   filterable: false,
                 },
+                form: {
+                  visible: true,
+                },
               },
             ];
           }
@@ -251,6 +270,9 @@ export const ServiceConfigForm = forwardRef<
               sortable: false,
               searchable: false,
               filterable: false,
+            },
+            form: {
+              visible: true,
             },
           },
         ];
@@ -292,6 +314,9 @@ export const ServiceConfigForm = forwardRef<
           sortable: false,
           searchable: false,
           filterable: false,
+        },
+        form: {
+          visible: true,
         },
       },
     ]);
@@ -742,10 +767,32 @@ export const ServiceConfigForm = forwardRef<
                         />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ));
-            })()}
+
+                    {/* Form Configuration */}
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-medium mb-3">Form Configuration</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`fields.${index}.form.visible`}
+                          render={({ field }) => (
+                            <FormItem className="flex items-center space-x-2">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value ?? true}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm">Visible in Form</FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                </CardContent>
+              </Card>
+            ));
+          })()}
             <div className="flex justify-end">
               <Button
                 type="button"
